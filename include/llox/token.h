@@ -1,6 +1,8 @@
 #ifndef LLOX_TOKEN_H
 #define LLOX_TOKEN_H
 
+#include <string>
+
 namespace llox {
 
 enum TokenType {
@@ -54,12 +56,11 @@ enum TokenType {
 };
 
 class Token {
- protected:
+ public:
   TokenType type;
   std::string lexeme;
   unsigned int line;
 
- public:
   Token(TokenType type, const std::string &lexeme, unsigned int line)
       : type(type), lexeme(lexeme), line(line) {}
 
@@ -69,9 +70,9 @@ class Token {
 };
 
 class StringToken : public Token {
+ public:
   std::string literal;
 
- public:
   StringToken(const std::string &lexeme, unsigned int line,
               const std::string &literal)
       : Token(STRING, lexeme, line), literal(literal) {}
@@ -82,9 +83,9 @@ class StringToken : public Token {
 };
 
 class NumberToken : public Token {
+ public:
   double literal;
 
- public:
   NumberToken(const std::string &lexeme, unsigned int line, double literal)
       : Token(NUMBER, lexeme, line), literal(literal) {}
 

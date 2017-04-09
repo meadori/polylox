@@ -13,12 +13,12 @@ class Token;
 
 class Scanner {
  public:
-  typedef std::unique_ptr<Token> TokenPtr;
+  typedef std::vector<std::unique_ptr<Token>> TokenList;
 
  private:
   std::string source;
 
-  std::unique_ptr<std::vector<TokenPtr>> tokens;
+  std::unique_ptr<TokenList> tokens;
 
   std::map<std::string, TokenType> keywords;
 
@@ -30,7 +30,7 @@ class Scanner {
 
  public:
   Scanner(const std::string &source) : source(source) {
-    tokens.reset(new std::vector<TokenPtr>());
+    tokens.reset(new TokenList());
 
     keywords["and"] = TokenType::AND;
     keywords["class"] = TokenType::CLASS;
@@ -50,7 +50,7 @@ class Scanner {
     keywords["while"] = WHILE;
   }
 
-  std::unique_ptr<std::vector<TokenPtr>> scanTokens();
+  std::unique_ptr<TokenList> scanTokens();
 
  private:
   void scanToken();

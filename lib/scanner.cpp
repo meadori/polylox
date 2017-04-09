@@ -82,7 +82,7 @@ void Scanner::scanToken() {
   }
 }
 
-std::unique_ptr<std::vector<Scanner::TokenPtr>> Scanner::scanTokens() {
+std::unique_ptr<Scanner::TokenList> Scanner::scanTokens() {
   while (!isAtEnd()) {
     start = current;
     scanToken();

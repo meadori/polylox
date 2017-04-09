@@ -4,16 +4,21 @@
 #include <string>
 #include <vector>
 
+#include "llox/ast-printer.h"
+#include "llox/ast.h"
+#include "llox/parser.h"
 #include "llox/scanner.h"
 #include "llox/token.h"
 
 static void run(const std::string &source) {
   llox::Scanner scanner(source);
-  std::unique_ptr<std::vector<llox::Scanner::TokenPtr>> tokens =
-      scanner.scanTokens();
+  std::unique_ptr<llox::Scanner::TokenList> tokens = scanner.scanTokens();
+  llox::Parser parser(std::move(tokens));
+  std::unique_ptr<llox::Expr> expression = parser.parse();
 
-  for (auto &token : *tokens) {
-    std::cout << *token << std::endl;
+  if (expression) {
+    llox::AstPrinter printer;
+    std::cout << printer.print(expression.get()) << "\n";
   }
 }
 
