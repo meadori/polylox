@@ -6,6 +6,7 @@
 
 #include "llox/ast-printer.h"
 #include "llox/ast.h"
+#include "llox/interpreter.h"
 #include "llox/parser.h"
 #include "llox/scanner.h"
 #include "llox/token.h"
@@ -19,6 +20,9 @@ static void run(const std::string &source) {
   if (expression) {
     llox::AstPrinter printer;
     std::cout << printer.print(expression.get()) << "\n";
+
+    llox::Interpreter interpreter;
+    interpreter.interpret(expression.get());
   }
 }
 
