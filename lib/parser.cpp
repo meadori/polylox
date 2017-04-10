@@ -33,6 +33,34 @@ bool Parser::match(TokenT... types) {
   return false;
 }
 
+// or -> and ( "or" and )*
+Expr *Parser::lor() {
+  Expr *expr = land();
+
+  while (match(OR)) {
+    Token *op = releaseLastToken();
+    Expr *right = land();
+    if (!right) return nullptr;
+    expr = new LogicalExpr(expr, op, right);
+  }
+
+  return expr;
+}
+
+// and -> equality ( "and" equality )*
+Expr *Parser::land() {
+  Expr *expr = equality();
+
+  while (match(AND)) {
+    Token *op = releaseLastToken();
+    Expr *right = equality();
+    if (!right) return nullptr;
+    expr = new LogicalExpr(expr, op, right);
+  }
+
+  return expr;
+}
+
 // comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )*
 Expr *Parser::comparison() {
   Expr *expr = term();

@@ -22,7 +22,7 @@ class Parser {
   template <typename... TokenT>
   bool match(TokenT... tokens);
 
-  Expr *expression() { return equality(); }
+  Expr *expression() { return lor(); }
 
   bool check(TokenType type) {
     if (isAtEnd()) return false;
@@ -41,6 +41,10 @@ class Parser {
   Token *previous() const { return tokens->at(current - 1).get(); }
 
   Token *releaseLastToken() { return tokens->at(current - 1).release(); }
+
+  Expr *land();
+
+  Expr *lor();
 
   Expr *equality();
 

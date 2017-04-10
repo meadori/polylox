@@ -35,7 +35,9 @@ void AstPrinter::visit(StringLiteralExpr *expr) {
   representation.append(expr->value);
 }
 
-void AstPrinter::visit(LogicalExpr *expr) {}
+void AstPrinter::visit(LogicalExpr *expr) {
+  parenthesize(expr->op->lexeme, expr->left.get(), expr->right.get());
+}
 
 void AstPrinter::visit(SetExpr *expr) {}
 

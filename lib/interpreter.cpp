@@ -117,7 +117,17 @@ void Interpreter::visit(StringLiteralExpr *expr) {
   value.reset(new StringResult(expr->value));
 }
 
-void Interpreter::visit(LogicalExpr *expr) {}
+void Interpreter::visit(LogicalExpr *expr) {
+  evaluate(expr->left.get());
+
+  if (expr->op->type == OR && !value->isTrue()) {
+    evaluate(expr->right.get());
+  }
+
+  if (expr->op->type == AND && value->isTrue()) {
+    evaluate(expr->right.get());
+  }
+}
 
 void Interpreter::visit(SetExpr *expr) {}
 
