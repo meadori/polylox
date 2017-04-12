@@ -51,7 +51,9 @@ void AstPrinter::visit(UnaryExpr *expr) {
   parenthesize(expr->op->lexeme, expr->right.get());
 }
 
-void AstPrinter::visit(VariableExpr *expr) {}
+void AstPrinter::visit(VariableExpr *expr) {
+  representation.append(expr->name->lexeme);
+}
 
 template <typename... ExprT>
 std::string AstPrinter::parenthesize(const std::string &name, ExprT... exprs) {
