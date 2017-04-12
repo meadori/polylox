@@ -7,7 +7,9 @@ std::string AstPrinter::print(Expr *expr) {
   return representation;
 }
 
-void AstPrinter::visit(AssignExpr *expr) {}
+void AstPrinter::visit(AssignExpr *expr) {
+  parenthesize("= " + expr->name->lexeme, expr->value.get());
+}
 
 void AstPrinter::visit(BinaryExpr *expr) {
   parenthesize(expr->op->lexeme, expr->left.get(), expr->right.get());

@@ -33,6 +33,40 @@ bool Parser::match(TokenT... types) {
   return false;
 }
 
+// assignment -> or ( "=" assignment )?
+Expr *Parser::assignment() {
+  Expr *expr = lor();
+
+  if (match(EQUAL)) {
+    std::unique_ptr<Token> equals(releaseLastToken());
+    Expr *value = assignment();
+    if (!value) return nullptr;
+
+    switch (expr->kind) {
+      case Expr::VariableExprKind: {
+        VariableExpr *variable = static_cast<VariableExpr *>(expr);
+        Token *name = variable->name->clone();
+        expr = new AssignExpr(name, value);
+        break;
+      }
+      case Expr::GetExprKind: {
+        GetExpr *variable = static_cast<GetExpr *>(expr);
+        Token *name = variable->name->clone();
+        Expr *object = variable->object->clone();
+        expr = new SetExpr(variable->object.get(), name, value);
+        break;
+      }
+      default:
+        // TODO: Create a proper error handling abstraction.
+        std::cerr << "error: Invalid assignment target.\n";
+        return nullptr;
+        break;
+    }
+  }
+
+  return expr;
+}
+
 // or -> and ( "or" and )*
 Expr *Parser::lor() {
   Expr *expr = land();
@@ -136,6 +170,8 @@ Expr *Parser::primary() {
   if (match(TRUE)) return new BoolLiteralExpr(true);
 
   if (match(NIL)) return new NilLiteralExpr();
+
+  if (match(IDENTIFIER)) return new VariableExpr(releaseLastToken());
 
   if (match(LEFT_PAREN)) {
     Expr *expr = expression();

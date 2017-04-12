@@ -64,6 +64,8 @@ class Token {
   Token(TokenType type, const std::string &lexeme, unsigned int line)
       : type(type), lexeme(lexeme), line(line) {}
 
+  virtual Token *clone() const { return new Token(type, lexeme, line); }
+
   virtual std::string str() const {
     return std::to_string(type) + " " + lexeme;
   }
@@ -77,6 +79,10 @@ class StringToken : public Token {
               const std::string &literal)
       : Token(STRING, lexeme, line), literal(literal) {}
 
+  Token *clone() const override {
+    return new StringToken(lexeme, line, literal);
+  }
+
   std::string str() const override {
     return std::to_string(type) + " " + lexeme + " " + literal;
   }
@@ -88,6 +94,10 @@ class NumberToken : public Token {
 
   NumberToken(const std::string &lexeme, unsigned int line, double literal)
       : Token(NUMBER, lexeme, line), literal(literal) {}
+
+  Token *clone() const override {
+    return new NumberToken(lexeme, line, literal);
+  }
 
   std::string str() const override {
     return std::to_string(type) + " " + lexeme + " " + std::to_string(literal);

@@ -45,6 +45,30 @@ class ExprVisitor {
 
 class Expr {
  public:
+  enum ExprKind {
+    AssignExprKind,
+    BinaryExprKind,
+    CallExprKind,
+    GetExprKind,
+    GroupingExprKind,
+    BoolLiteralExprKind,
+    NilLiteralExprKind,
+    NumberLiteralExprKind,
+    StringLiteralExprKind,
+    LogicalExprKind,
+    SetExprKind,
+    SuperExprKind,
+    ThisExprKind,
+    UnaryExprKind,
+    VariableExprKind,
+  };
+
+  ExprKind kind;
+
+  Expr(ExprKind kind) : kind(kind) {}
+
+  virtual Expr *clone() = 0;
+
   virtual void accept(ExprVisitor &visitor) = 0;
 };
 
@@ -53,9 +77,14 @@ class AssignExpr : public Expr {
   std::unique_ptr<Token> name;
   std::unique_ptr<Expr> value;
 
-  AssignExpr(Token *name, Expr *value) : name(name), value(value) {}
+  AssignExpr(Token *name, Expr *value)
+      : Expr(Expr::AssignExprKind), name(name), value(value) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override {
+    return new AssignExpr(name->clone(), value->clone());
+  }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class BinaryExpr : public Expr {
@@ -65,9 +94,13 @@ class BinaryExpr : public Expr {
   std::unique_ptr<Expr> right;
 
   BinaryExpr(Expr *left, Token *op, Expr *right)
-      : left(left), op(op), right(right) {}
+      : Expr(Expr::BinaryExprKind), left(left), op(op), right(right) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override {
+    return new BinaryExpr(left->clone(), op->clone(), right->clone());
+  }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class CallExpr : public Expr {
@@ -77,13 +110,20 @@ class CallExpr : public Expr {
   std::vector<std::unique_ptr<Expr>> arguments;
 
   CallExpr(Expr *callee, Token *paren, std::vector<Expr *> &arguments)
-      : callee(callee), paren(paren) {
+      : Expr(Expr::CallExprKind), callee(callee), paren(paren) {
     for (auto &elem : arguments) {
       arguments.push_back(std::move(elem));
     }
   }
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override {
+    std::vector<Expr *> new_arguments;
+    new_arguments.resize(arguments.size());
+    for (auto &arg : arguments) new_arguments.push_back(arg->clone());
+    return new CallExpr(callee->clone(), paren->clone(), new_arguments);
+  }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class GetExpr : public Expr {
@@ -91,48 +131,68 @@ class GetExpr : public Expr {
   std::unique_ptr<Expr> object;
   std::unique_ptr<Token> name;
 
-  GetExpr(Expr *object, Token *name) : object(object), name(name) {}
+  GetExpr(Expr *object, Token *name)
+      : Expr(Expr::GetExprKind), object(object), name(name) {}
+
+  Expr *clone() override { return new GetExpr(object->clone(), name->clone()); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class GroupingExpr : public Expr {
  public:
   std::unique_ptr<Expr> expression;
 
-  GroupingExpr(Expr *expression) : expression(expression) {}
+  GroupingExpr(Expr *expression)
+      : Expr(Expr::GroupingExprKind), expression(expression) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override { return new GroupingExpr(expression->clone()); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class BoolLiteralExpr : public Expr {
  public:
   bool value;
 
-  BoolLiteralExpr(bool value) : value(value) {}
+  BoolLiteralExpr(bool value) : Expr(Expr::BoolLiteralExprKind), value(value) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override { return new BoolLiteralExpr(value); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class NilLiteralExpr : public Expr {
  public:
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  NilLiteralExpr() : Expr(Expr::NilLiteralExprKind) {}
+
+  Expr *clone() override { return new NilLiteralExpr(); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class NumberLiteralExpr : public Expr {
  public:
   double value;
 
-  NumberLiteralExpr(double value) : value(value) {}
+  NumberLiteralExpr(double value)
+      : Expr(Expr::NumberLiteralExprKind), value(value) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override { return new NumberLiteralExpr(value); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class StringLiteralExpr : public Expr {
  public:
   std::string value;
 
-  StringLiteralExpr(std::string &value) : value(value) {}
+  StringLiteralExpr(std::string &value)
+      : Expr(Expr::StringLiteralExprKind), value(value) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override { return new StringLiteralExpr(value); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class LogicalExpr : public Expr {
@@ -142,9 +202,13 @@ class LogicalExpr : public Expr {
   std::unique_ptr<Expr> right;
 
   LogicalExpr(Expr *left, Token *op, Expr *right)
-      : left(left), op(op), right(right) {}
+      : Expr(Expr::LogicalExprKind), left(left), op(op), right(right) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override {
+    return new LogicalExpr(left->clone(), op->clone(), right->clone());
+  }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class SetExpr : public Expr {
@@ -154,9 +218,13 @@ class SetExpr : public Expr {
   std::unique_ptr<Expr> value;
 
   SetExpr(Expr *object, Token *name, Expr *value)
-      : object(object), name(name), value(value) {}
+      : Expr(Expr::SetExprKind), object(object), name(name), value(value) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override {
+    return new SetExpr(object->clone(), name->clone(), value->clone());
+  }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class SuperExpr : public Expr {
@@ -164,18 +232,25 @@ class SuperExpr : public Expr {
   std::unique_ptr<Token> keyword;
   std::unique_ptr<Token> method;
 
-  SuperExpr(Token *keyword, Token *method) : keyword(keyword), method(method) {}
+  SuperExpr(Token *keyword, Token *method)
+      : Expr(Expr::SuperExprKind), keyword(keyword), method(method) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override {
+    return new SuperExpr(keyword->clone(), method->clone());
+  }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class ThisExpr : public Expr {
  public:
   std::unique_ptr<Token> keyword;
 
-  ThisExpr(Token *keyword) : keyword(keyword) {}
+  ThisExpr(Token *keyword) : Expr(Expr::ThisExprKind), keyword(keyword) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override { return new ThisExpr(keyword->clone()); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class UnaryExpr : public Expr {
@@ -183,18 +258,23 @@ class UnaryExpr : public Expr {
   std::unique_ptr<Token> op;
   std::unique_ptr<Expr> right;
 
-  UnaryExpr(Token *op, Expr *right) : op(op), right(right) {}
+  UnaryExpr(Token *op, Expr *right)
+      : Expr(Expr::UnaryExprKind), op(op), right(right) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override { return new UnaryExpr(op->clone(), right->clone()); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 class VariableExpr : public Expr {
  public:
   std::unique_ptr<Token> name;
 
-  VariableExpr(Token *name) : name(name) {}
+  VariableExpr(Token *name) : Expr(Expr::VariableExprKind), name(name) {}
 
-  virtual void accept(ExprVisitor &visitor) { visitor.visit(this); }
+  Expr *clone() override { return new VariableExpr(name->clone()); }
+
+  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
 
 }  // namespace llox
