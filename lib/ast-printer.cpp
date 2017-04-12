@@ -15,7 +15,12 @@ void AstPrinter::visit(BinaryExpr *expr) {
   parenthesize(expr->op->lexeme, expr->left.get(), expr->right.get());
 }
 
-void AstPrinter::visit(CallExpr *expr) {}
+void AstPrinter::visit(CallExpr *expr) {
+  std::vector<Expr *> exprs;
+  exprs.push_back(expr->callee.get());
+  for (auto &expr : expr->arguments) exprs.push_back(expr.get());
+  parenthesize("call", exprs);
+}
 
 void AstPrinter::visit(GetExpr *expr) {}
 
@@ -58,10 +63,15 @@ void AstPrinter::visit(VariableExpr *expr) {
 template <typename... ExprT>
 std::string AstPrinter::parenthesize(const std::string &name, ExprT... exprs) {
   std::vector<Expr *> exprvec = {exprs...};
+  return parenthesize(name, exprvec);
+}
 
+template <typename ExprT>
+std::string AstPrinter::parenthesize(const std::string &name,
+                                     const std::vector<ExprT> &exprs) {
   representation.append("(").append(name);
 
-  for (Expr *expr : exprvec) {
+  for (auto &expr : exprs) {
     representation.append(" ");
     expr->accept(*this);
   }

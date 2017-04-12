@@ -149,7 +149,46 @@ Expr *Parser::unary() {
     return new UnaryExpr(op, expr);
   }
 
-  return primary();
+  return call();
+}
+
+Expr *Parser::finishCallExpr(Expr *callee) {
+  std::vector<Expr *> arguments;
+
+  if (!check(RIGHT_PAREN)) {
+    do {
+      if (arguments.size() >= 8) {
+        std::cerr << "error: Cannot have more than 8 arguments.\n";
+        return nullptr;
+      }
+      Expr *expr = expression();
+      if (expr)
+        arguments.push_back(expr);
+      else
+        return nullptr;
+    } while (match(COMMA));
+  }
+
+  if (!consume(RIGHT_PAREN, "Expect ')' after arguments.")) return nullptr;
+
+  return new CallExpr(callee, releaseLastToken(), arguments);
+}
+
+Expr *Parser::call() {
+  Expr *expr = primary();
+
+  while (true) {
+    if (match(LEFT_PAREN)) {
+      expr = finishCallExpr(expr);
+    } else if (match(DOT)) {
+      if (consume(IDENTIFIER, "Expect property name after '.'."))
+        expr = new GetExpr(expr, releaseLastToken());
+    } else {
+      break;
+    }
+  }
+
+  return expr;
 }
 
 // primary -> NUMBER | STRING | "false" | "true" | "nil"
@@ -179,6 +218,8 @@ Expr *Parser::primary() {
     if (!consume(RIGHT_PAREN, "Expect ')' after expression.")) return nullptr;
     return new GroupingExpr(expr);
   }
+
+  std::cerr << "Expect expression.\n";
 
   return nullptr;
 }

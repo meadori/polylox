@@ -32,6 +32,10 @@ class AstPrinter : ExprVisitor {
  private:
   template <typename... ExprT>
   std::string parenthesize(const std::string &name, ExprT... exprs);
+
+  template <typename ExprT>
+  std::string parenthesize(const std::string &name,
+                           const std::vector<ExprT> &exprs);
 };
 
 }  // namespace llox

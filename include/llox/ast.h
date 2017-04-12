@@ -109,10 +109,10 @@ class CallExpr : public Expr {
   std::unique_ptr<Token> paren;
   std::vector<std::unique_ptr<Expr>> arguments;
 
-  CallExpr(Expr *callee, Token *paren, std::vector<Expr *> &arguments)
+  CallExpr(Expr *callee, Token *paren, std::vector<Expr *> &actual_arguments)
       : Expr(Expr::CallExprKind), callee(callee), paren(paren) {
-    for (auto &elem : arguments) {
-      arguments.push_back(std::move(elem));
+    for (auto &elem : actual_arguments) {
+      arguments.push_back(std::unique_ptr<Expr>(elem));
     }
   }
 

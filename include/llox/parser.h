@@ -58,6 +58,10 @@ class Parser {
 
   Expr *unary();
 
+  Expr *finishCallExpr(Expr *callee);
+
+  Expr *call();
+
   Expr *primary();
 
   bool consume(TokenType type, const std::string &message);
