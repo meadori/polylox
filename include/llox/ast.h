@@ -2,6 +2,7 @@
 #define LLOX_AST_H
 
 #include "token.h"
+#include "util.h"
 
 #include <string>
 #include <vector>
@@ -67,7 +68,9 @@ class Expr {
 
   Expr(ExprKind kind) : kind(kind) {}
 
-  virtual Expr *clone() = 0;
+  virtual ~Expr() {}
+
+  virtual std::unique_ptr<Expr> clone() = 0;
 
   virtual void accept(ExprVisitor &visitor) = 0;
 };
@@ -77,11 +80,13 @@ class AssignExpr : public Expr {
   std::unique_ptr<Token> name;
   std::unique_ptr<Expr> value;
 
-  AssignExpr(Token *name, Expr *value)
-      : Expr(Expr::AssignExprKind), name(name), value(value) {}
+  AssignExpr(std::unique_ptr<Token> name, std::unique_ptr<Expr> value)
+      : Expr(Expr::AssignExprKind),
+        name(std::move(name)),
+        value(std::move(value)) {}
 
-  Expr *clone() override {
-    return new AssignExpr(name->clone(), value->clone());
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<AssignExpr>(name->clone(), value->clone());
   }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
@@ -93,11 +98,16 @@ class BinaryExpr : public Expr {
   std::unique_ptr<Token> op;
   std::unique_ptr<Expr> right;
 
-  BinaryExpr(Expr *left, Token *op, Expr *right)
-      : Expr(Expr::BinaryExprKind), left(left), op(op), right(right) {}
+  BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Token> op,
+             std::unique_ptr<Expr> right)
+      : Expr(Expr::BinaryExprKind),
+        left(std::move(left)),
+        op(std::move(op)),
+        right(std::move(right)) {}
 
-  Expr *clone() override {
-    return new BinaryExpr(left->clone(), op->clone(), right->clone());
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<BinaryExpr>(left->clone(), op->clone(),
+                                         right->clone());
   }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
@@ -109,18 +119,22 @@ class CallExpr : public Expr {
   std::unique_ptr<Token> paren;
   std::vector<std::unique_ptr<Expr>> arguments;
 
-  CallExpr(Expr *callee, Token *paren, std::vector<Expr *> &actual_arguments)
-      : Expr(Expr::CallExprKind), callee(callee), paren(paren) {
+  CallExpr(std::unique_ptr<Expr> callee, std::unique_ptr<Token> paren,
+           std::vector<std::unique_ptr<Expr>> &actual_arguments)
+      : Expr(Expr::CallExprKind),
+        callee(std::move(callee)),
+        paren(std::move(paren)) {
     for (auto &elem : actual_arguments) {
-      arguments.push_back(std::unique_ptr<Expr>(elem));
+      arguments.push_back(std::move(elem));
     }
   }
 
-  Expr *clone() override {
-    std::vector<Expr *> new_arguments;
+  std::unique_ptr<Expr> clone() override {
+    std::vector<std::unique_ptr<Expr>> new_arguments;
     new_arguments.resize(arguments.size());
     for (auto &arg : arguments) new_arguments.push_back(arg->clone());
-    return new CallExpr(callee->clone(), paren->clone(), new_arguments);
+    return llox::make_unique<CallExpr>(callee->clone(), paren->clone(),
+                                       new_arguments);
   }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
@@ -131,10 +145,14 @@ class GetExpr : public Expr {
   std::unique_ptr<Expr> object;
   std::unique_ptr<Token> name;
 
-  GetExpr(Expr *object, Token *name)
-      : Expr(Expr::GetExprKind), object(object), name(name) {}
+  GetExpr(std::unique_ptr<Expr> object, std::unique_ptr<Token> name)
+      : Expr(Expr::GetExprKind),
+        object(std::move(object)),
+        name(std::move(name)) {}
 
-  Expr *clone() override { return new GetExpr(object->clone(), name->clone()); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<GetExpr>(object->clone(), name->clone());
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
@@ -143,10 +161,12 @@ class GroupingExpr : public Expr {
  public:
   std::unique_ptr<Expr> expression;
 
-  GroupingExpr(Expr *expression)
-      : Expr(Expr::GroupingExprKind), expression(expression) {}
+  GroupingExpr(std::unique_ptr<Expr> expression)
+      : Expr(Expr::GroupingExprKind), expression(std::move(expression)) {}
 
-  Expr *clone() override { return new GroupingExpr(expression->clone()); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<GroupingExpr>(expression->clone());
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
@@ -157,7 +177,9 @@ class BoolLiteralExpr : public Expr {
 
   BoolLiteralExpr(bool value) : Expr(Expr::BoolLiteralExprKind), value(value) {}
 
-  Expr *clone() override { return new BoolLiteralExpr(value); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<BoolLiteralExpr>(value);
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
@@ -166,7 +188,9 @@ class NilLiteralExpr : public Expr {
  public:
   NilLiteralExpr() : Expr(Expr::NilLiteralExprKind) {}
 
-  Expr *clone() override { return new NilLiteralExpr(); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<NilLiteralExpr>();
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
@@ -178,7 +202,9 @@ class NumberLiteralExpr : public Expr {
   NumberLiteralExpr(double value)
       : Expr(Expr::NumberLiteralExprKind), value(value) {}
 
-  Expr *clone() override { return new NumberLiteralExpr(value); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<NumberLiteralExpr>(value);
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
@@ -190,7 +216,9 @@ class StringLiteralExpr : public Expr {
   StringLiteralExpr(std::string &value)
       : Expr(Expr::StringLiteralExprKind), value(value) {}
 
-  Expr *clone() override { return new StringLiteralExpr(value); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<StringLiteralExpr>(value);
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
@@ -201,11 +229,16 @@ class LogicalExpr : public Expr {
   std::unique_ptr<Token> op;
   std::unique_ptr<Expr> right;
 
-  LogicalExpr(Expr *left, Token *op, Expr *right)
-      : Expr(Expr::LogicalExprKind), left(left), op(op), right(right) {}
+  LogicalExpr(std::unique_ptr<Expr> left, std::unique_ptr<Token> op,
+              std::unique_ptr<Expr> right)
+      : Expr(Expr::LogicalExprKind),
+        left(std::move(left)),
+        op(std::move(op)),
+        right(std::move(right)) {}
 
-  Expr *clone() override {
-    return new LogicalExpr(left->clone(), op->clone(), right->clone());
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<LogicalExpr>(left->clone(), op->clone(),
+                                          right->clone());
   }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
@@ -217,11 +250,16 @@ class SetExpr : public Expr {
   std::unique_ptr<Token> name;
   std::unique_ptr<Expr> value;
 
-  SetExpr(Expr *object, Token *name, Expr *value)
-      : Expr(Expr::SetExprKind), object(object), name(name), value(value) {}
+  SetExpr(std::unique_ptr<Expr> object, std::unique_ptr<Token> name,
+          std::unique_ptr<Expr> value)
+      : Expr(Expr::SetExprKind),
+        object(std::move(object)),
+        name(std::move(name)),
+        value(std::move(value)) {}
 
-  Expr *clone() override {
-    return new SetExpr(object->clone(), name->clone(), value->clone());
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<SetExpr>(object->clone(), name->clone(),
+                                      value->clone());
   }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
@@ -232,11 +270,13 @@ class SuperExpr : public Expr {
   std::unique_ptr<Token> keyword;
   std::unique_ptr<Token> method;
 
-  SuperExpr(Token *keyword, Token *method)
-      : Expr(Expr::SuperExprKind), keyword(keyword), method(method) {}
+  SuperExpr(std::unique_ptr<Token> keyword, std::unique_ptr<Token> method)
+      : Expr(Expr::SuperExprKind),
+        keyword(std::move(keyword)),
+        method(std::move(method)) {}
 
-  Expr *clone() override {
-    return new SuperExpr(keyword->clone(), method->clone());
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<SuperExpr>(keyword->clone(), method->clone());
   }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
@@ -246,9 +286,12 @@ class ThisExpr : public Expr {
  public:
   std::unique_ptr<Token> keyword;
 
-  ThisExpr(Token *keyword) : Expr(Expr::ThisExprKind), keyword(keyword) {}
+  ThisExpr(std::unique_ptr<Token> keyword)
+      : Expr(Expr::ThisExprKind), keyword(std::move(keyword)) {}
 
-  Expr *clone() override { return new ThisExpr(keyword->clone()); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<ThisExpr>(keyword->clone());
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
@@ -258,10 +301,12 @@ class UnaryExpr : public Expr {
   std::unique_ptr<Token> op;
   std::unique_ptr<Expr> right;
 
-  UnaryExpr(Token *op, Expr *right)
-      : Expr(Expr::UnaryExprKind), op(op), right(right) {}
+  UnaryExpr(std::unique_ptr<Token> op, std::unique_ptr<Expr> right)
+      : Expr(Expr::UnaryExprKind), op(std::move(op)), right(std::move(right)) {}
 
-  Expr *clone() override { return new UnaryExpr(op->clone(), right->clone()); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<UnaryExpr>(op->clone(), right->clone());
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
@@ -270,12 +315,20 @@ class VariableExpr : public Expr {
  public:
   std::unique_ptr<Token> name;
 
-  VariableExpr(Token *name) : Expr(Expr::VariableExprKind), name(name) {}
+  VariableExpr(std::unique_ptr<Token> name)
+      : Expr(Expr::VariableExprKind), name(std::move(name)) {}
 
-  Expr *clone() override { return new VariableExpr(name->clone()); }
+  std::unique_ptr<Expr> clone() override {
+    return llox::make_unique<VariableExpr>(name->clone());
+  }
 
   void accept(ExprVisitor &visitor) override { visitor.visit(this); }
 };
+
+template <typename T, typename... Args>
+std::unique_ptr<Expr> make_expr(Args &&... args) {
+  return std::unique_ptr<Expr>(new T(std::move(std::forward<Args>(args))...));
+}
 
 }  // namespace llox
 

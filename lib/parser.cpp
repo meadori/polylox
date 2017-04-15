@@ -1,19 +1,20 @@
 #include "llox/parser.h"
+#include "llox/util.h"
 
 #include <iostream>
 #include <vector>
 
 using namespace llox;
 
-Expr *Parser::equality() {
-  Expr *expr = comparison();
+std::unique_ptr<Expr> Parser::equality() {
+  std::unique_ptr<Expr> expr = comparison();
   if (!expr) return nullptr;
 
   while (match(BANG_EQUAL, EQUAL_EQUAL)) {
-    Token *op = releaseLastToken();
-    Expr *right = comparison();
+    std::unique_ptr<Token> op = releaseLastToken();
+    std::unique_ptr<Expr> right = comparison();
     if (!right) return nullptr;
-    expr = new BinaryExpr(expr, op, right);
+    expr = llox::make_expr<BinaryExpr>(expr, op, right);
   }
 
   return expr;
@@ -34,26 +35,26 @@ bool Parser::match(TokenT... types) {
 }
 
 // assignment -> or ( "=" assignment )?
-Expr *Parser::assignment() {
-  Expr *expr = lor();
+std::unique_ptr<Expr> Parser::assignment() {
+  std::unique_ptr<Expr> expr = lor();
 
   if (match(EQUAL)) {
-    std::unique_ptr<Token> equals(releaseLastToken());
-    Expr *value = assignment();
+    std::unique_ptr<Token> equals = releaseLastToken();
+    std::unique_ptr<Expr> value = assignment();
     if (!value) return nullptr;
 
     switch (expr->kind) {
       case Expr::VariableExprKind: {
-        VariableExpr *variable = static_cast<VariableExpr *>(expr);
-        Token *name = variable->name->clone();
-        expr = new AssignExpr(name, value);
+        std::unique_ptr<Token> name =
+            static_cast<VariableExpr *>(expr.get())->name->clone();
+        expr = llox::make_expr<AssignExpr>(name, value);
         break;
       }
       case Expr::GetExprKind: {
-        GetExpr *variable = static_cast<GetExpr *>(expr);
-        Token *name = variable->name->clone();
-        Expr *object = variable->object->clone();
-        expr = new SetExpr(variable->object.get(), name, value);
+        GetExpr *variable = static_cast<GetExpr *>(expr.get());
+        std::unique_ptr<Token> name = variable->name->clone();
+        std::unique_ptr<Expr> object = variable->object->clone();
+        expr = llox::make_expr<SetExpr>(object, name, value);
         break;
       }
       default:
@@ -68,92 +69,92 @@ Expr *Parser::assignment() {
 }
 
 // or -> and ( "or" and )*
-Expr *Parser::lor() {
-  Expr *expr = land();
+std::unique_ptr<Expr> Parser::lor() {
+  std::unique_ptr<Expr> expr = land();
 
   while (match(OR)) {
-    Token *op = releaseLastToken();
-    Expr *right = land();
+    std::unique_ptr<Token> op = releaseLastToken();
+    std::unique_ptr<Expr> right = land();
     if (!right) return nullptr;
-    expr = new LogicalExpr(expr, op, right);
+    expr = llox::make_expr<LogicalExpr>(expr, op, right);
   }
 
   return expr;
 }
 
 // and -> equality ( "and" equality )*
-Expr *Parser::land() {
-  Expr *expr = equality();
+std::unique_ptr<Expr> Parser::land() {
+  std::unique_ptr<Expr> expr = equality();
 
   while (match(AND)) {
-    Token *op = releaseLastToken();
-    Expr *right = equality();
+    std::unique_ptr<Token> op = releaseLastToken();
+    std::unique_ptr<Expr> right = equality();
     if (!right) return nullptr;
-    expr = new LogicalExpr(expr, op, right);
+    expr = llox::make_expr<LogicalExpr>(expr, op, right);
   }
 
   return expr;
 }
 
 // comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )*
-Expr *Parser::comparison() {
-  Expr *expr = term();
+std::unique_ptr<Expr> Parser::comparison() {
+  std::unique_ptr<Expr> expr = term();
   if (!expr) return nullptr;
 
   while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-    Token *op = releaseLastToken();
-    Expr *right = term();
+    std::unique_ptr<Token> op = releaseLastToken();
+    std::unique_ptr<Expr> right = term();
     if (!right) return nullptr;
-    expr = new BinaryExpr(expr, op, right);
+    expr = llox::make_expr<BinaryExpr>(expr, op, right);
   }
 
   return expr;
 }
 
 // term -> factor ( ( "-" | "+" ) factor )*
-Expr *Parser::term() {
-  Expr *expr = factor();
+std::unique_ptr<Expr> Parser::term() {
+  std::unique_ptr<Expr> expr = factor();
   if (!expr) return nullptr;
 
   while (match(MINUS, PLUS)) {
-    Token *op = releaseLastToken();
-    Expr *right = factor();
+    std::unique_ptr<Token> op = releaseLastToken();
+    std::unique_ptr<Expr> right = factor();
     if (!right) return nullptr;
-    expr = new BinaryExpr(expr, op, right);
+    expr = llox::make_expr<BinaryExpr>(expr, op, right);
   }
 
   return expr;
 }
 
 // factor -> unary ( ( "/" | "*" ) unary )*
-Expr *Parser::factor() {
-  Expr *expr = unary();
+std::unique_ptr<Expr> Parser::factor() {
+  std::unique_ptr<Expr> expr = unary();
   if (!expr) return nullptr;
 
   while (match(SLASH, STAR)) {
-    Token *op = releaseLastToken();
-    Expr *right = unary();
+    std::unique_ptr<Token> op = releaseLastToken();
+    std::unique_ptr<Expr> right = unary();
     if (!right) return nullptr;
-    expr = new BinaryExpr(expr, op, right);
+    expr = llox::make_expr<BinaryExpr>(expr, op, right);
   }
 
   return expr;
 }
 
 // unary -> ( "-" | "!" ) expression | primary
-Expr *Parser::unary() {
+std::unique_ptr<Expr> Parser::unary() {
   if (match(MINUS, BANG)) {
-    Token *op = releaseLastToken();
-    Expr *expr = expression();
+    std::unique_ptr<Token> op = releaseLastToken();
+    std::unique_ptr<Expr> expr = expression();
     if (!expr) return nullptr;
-    return new UnaryExpr(op, expr);
+    return llox::make_expr<UnaryExpr>(op, expr);
   }
 
   return call();
 }
 
-Expr *Parser::finishCallExpr(Expr *callee) {
-  std::vector<Expr *> arguments;
+std::unique_ptr<Expr> Parser::finishCallExpr(std::unique_ptr<Expr> callee) {
+  std::vector<std::unique_ptr<Expr>> arguments;
 
   if (!check(RIGHT_PAREN)) {
     do {
@@ -161,9 +162,9 @@ Expr *Parser::finishCallExpr(Expr *callee) {
         std::cerr << "error: Cannot have more than 8 arguments.\n";
         return nullptr;
       }
-      Expr *expr = expression();
+      std::unique_ptr<Expr> expr = expression();
       if (expr)
-        arguments.push_back(expr);
+        arguments.push_back(std::move(expr));
       else
         return nullptr;
     } while (match(COMMA));
@@ -171,18 +172,19 @@ Expr *Parser::finishCallExpr(Expr *callee) {
 
   if (!consume(RIGHT_PAREN, "Expect ')' after arguments.")) return nullptr;
 
-  return new CallExpr(callee, releaseLastToken(), arguments);
+  return std::unique_ptr<CallExpr>(new CallExpr(
+      std::move(callee), std::move(releaseLastToken()), arguments));
 }
 
-Expr *Parser::call() {
-  Expr *expr = primary();
+std::unique_ptr<Expr> Parser::call() {
+  std::unique_ptr<Expr> expr = primary();
 
   while (true) {
     if (match(LEFT_PAREN)) {
-      expr = finishCallExpr(expr);
+      expr = finishCallExpr(std::move(expr));
     } else if (match(DOT)) {
       if (consume(IDENTIFIER, "Expect property name after '.'."))
-        expr = new GetExpr(expr, releaseLastToken());
+        expr = llox::make_expr<GetExpr>(expr, releaseLastToken());
     } else {
       break;
     }
@@ -193,30 +195,35 @@ Expr *Parser::call() {
 
 // primary -> NUMBER | STRING | "false" | "true" | "nil"
 //          | "(" expression ")"
-Expr *Parser::primary() {
+std::unique_ptr<Expr> Parser::primary() {
   if (match(NUMBER)) {
-    NumberToken *token = static_cast<NumberToken *>(releaseLastToken());
-    return new NumberLiteralExpr(token->literal);
+    std::unique_ptr<Token> number = releaseLastToken();
+    double literal = static_cast<NumberToken *>(number.get())->literal;
+    return llox::make_unique<NumberLiteralExpr>(literal);
   }
 
   if (match(STRING)) {
-    StringToken *token = static_cast<StringToken *>(releaseLastToken());
-    return new StringLiteralExpr(token->literal);
+    std::unique_ptr<Token> string = releaseLastToken();
+    std::string literal = static_cast<StringToken *>(string.get())->literal;
+    return llox::make_unique<StringLiteralExpr>(literal);
   }
 
-  if (match(FALSE)) return new BoolLiteralExpr(false);
+  if (match(FALSE)) return llox::make_unique<BoolLiteralExpr>(false);
 
-  if (match(TRUE)) return new BoolLiteralExpr(true);
+  if (match(TRUE)) return llox::make_unique<BoolLiteralExpr>(true);
 
-  if (match(NIL)) return new NilLiteralExpr();
+  if (match(NIL)) return llox::make_unique<NilLiteralExpr>();
 
-  if (match(IDENTIFIER)) return new VariableExpr(releaseLastToken());
+  if (match(IDENTIFIER)) {
+    std::unique_ptr<Token> name = releaseLastToken();
+    return llox::make_expr<VariableExpr>(name);
+  }
 
   if (match(LEFT_PAREN)) {
-    Expr *expr = expression();
+    std::unique_ptr<Expr> expr = expression();
     if (!expr) return nullptr;
     if (!consume(RIGHT_PAREN, "Expect ')' after expression.")) return nullptr;
-    return new GroupingExpr(expr);
+    return llox::make_expr<GroupingExpr>(expr);
   }
 
   std::cerr << "Expect expression.\n";

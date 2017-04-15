@@ -16,13 +16,13 @@ class Parser {
   Parser(std::unique_ptr<Scanner::TokenList> tokens)
       : tokens(std::move(tokens)) {}
 
-  std::unique_ptr<Expr> parse() { return std::unique_ptr<Expr>(expression()); }
+  std::unique_ptr<Expr> parse() { return expression(); }
 
  private:
   template <typename... TokenT>
   bool match(TokenT... tokens);
 
-  Expr *expression() { return assignment(); }
+  std::unique_ptr<Expr> expression() { return assignment(); }
 
   bool check(TokenType type) {
     if (isAtEnd()) return false;
@@ -40,29 +40,31 @@ class Parser {
 
   Token *previous() const { return tokens->at(current - 1).get(); }
 
-  Token *releaseLastToken() { return tokens->at(current - 1).release(); }
+  std::unique_ptr<Token> releaseLastToken() {
+    return std::move(tokens->at(current - 1));
+  }
 
-  Expr *assignment();
+  std::unique_ptr<Expr> assignment();
 
-  Expr *land();
+  std::unique_ptr<Expr> land();
 
-  Expr *lor();
+  std::unique_ptr<Expr> lor();
 
-  Expr *equality();
+  std::unique_ptr<Expr> equality();
 
-  Expr *comparison();
+  std::unique_ptr<Expr> comparison();
 
-  Expr *term();
+  std::unique_ptr<Expr> term();
 
-  Expr *factor();
+  std::unique_ptr<Expr> factor();
 
-  Expr *unary();
+  std::unique_ptr<Expr> unary();
 
-  Expr *finishCallExpr(Expr *callee);
+  std::unique_ptr<Expr> finishCallExpr(std::unique_ptr<Expr> callee);
 
-  Expr *call();
+  std::unique_ptr<Expr> call();
 
-  Expr *primary();
+  std::unique_ptr<Expr> primary();
 
   bool consume(TokenType type, const std::string &message);
 };

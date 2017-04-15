@@ -1,6 +1,8 @@
 #ifndef LLOX_TOKEN_H
 #define LLOX_TOKEN_H
 
+#include "util.h"
+
 #include <string>
 
 namespace llox {
@@ -64,7 +66,9 @@ class Token {
   Token(TokenType type, const std::string &lexeme, unsigned int line)
       : type(type), lexeme(lexeme), line(line) {}
 
-  virtual Token *clone() const { return new Token(type, lexeme, line); }
+  virtual std::unique_ptr<Token> clone() const {
+    return llox::make_unique<Token>(type, lexeme, line);
+  }
 
   virtual std::string str() const {
     return std::to_string(type) + " " + lexeme;
@@ -79,8 +83,8 @@ class StringToken : public Token {
               const std::string &literal)
       : Token(STRING, lexeme, line), literal(literal) {}
 
-  Token *clone() const override {
-    return new StringToken(lexeme, line, literal);
+  std::unique_ptr<Token> clone() const override {
+    return llox::make_unique<StringToken>(lexeme, line, literal);
   }
 
   std::string str() const override {
@@ -95,8 +99,8 @@ class NumberToken : public Token {
   NumberToken(const std::string &lexeme, unsigned int line, double literal)
       : Token(NUMBER, lexeme, line), literal(literal) {}
 
-  Token *clone() const override {
-    return new NumberToken(lexeme, line, literal);
+  std::unique_ptr<Token> clone() const override {
+    return llox::make_unique<NumberToken>(lexeme, line, literal);
   }
 
   std::string str() const override {

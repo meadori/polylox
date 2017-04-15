@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "token.h"
+#include "util.h"
 
 namespace llox {
 
@@ -62,17 +63,17 @@ class Scanner {
 
   void addToken(TokenType type) {
     std::string text = source.substr(start, current - start);
-    tokens->emplace_back(new Token(type, text, line));
+    tokens->push_back(llox::make_unique<Token>(type, text, line));
   }
 
   void addStringToken(const std::string &literal) {
     std::string text = source.substr(start, current - start);
-    tokens->emplace_back(new StringToken(text, line, literal));
+    tokens->push_back(llox::make_unique<StringToken>(text, line, literal));
   }
 
   void addNumberToken(double literal) {
     std::string text = source.substr(start, current - start);
-    tokens->emplace_back(new NumberToken(text, line, literal));
+    tokens->push_back(llox::make_unique<NumberToken>(text, line, literal));
   }
 
   bool isAlpha(char c) {
