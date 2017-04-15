@@ -50,7 +50,7 @@ void AstPrinter::visit(SetExpr *expr) {}
 
 void AstPrinter::visit(SuperExpr *expr) {}
 
-void AstPrinter::visit(ThisExpr *expr) {}
+void AstPrinter::visit(ThisExpr *expr) { representation.append("this"); }
 
 void AstPrinter::visit(UnaryExpr *expr) {
   parenthesize(expr->op->lexeme, expr->right.get());

@@ -214,6 +214,11 @@ std::unique_ptr<Expr> Parser::primary() {
 
   if (match(NIL)) return llox::make_unique<NilLiteralExpr>();
 
+  if (match(THIS)) {
+    std::unique_ptr<Token> keyword = releaseLastToken();
+    return llox::make_expr<ThisExpr>(keyword);
+  }
+
   if (match(IDENTIFIER)) {
     std::unique_ptr<Token> name = releaseLastToken();
     return llox::make_expr<VariableExpr>(name);
