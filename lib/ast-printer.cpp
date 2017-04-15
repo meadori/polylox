@@ -22,7 +22,11 @@ void AstPrinter::visit(CallExpr *expr) {
   parenthesize("call", exprs);
 }
 
-void AstPrinter::visit(GetExpr *expr) {}
+void AstPrinter::visit(GetExpr *expr) {
+  representation.append("(. ");
+  expr->object->accept(*this);
+  representation.append(" " + expr->name->lexeme + ")");
+}
 
 void AstPrinter::visit(GroupingExpr *expr) {
   parenthesize("group", expr->expression.get());
@@ -46,7 +50,13 @@ void AstPrinter::visit(LogicalExpr *expr) {
   parenthesize(expr->op->lexeme, expr->left.get(), expr->right.get());
 }
 
-void AstPrinter::visit(SetExpr *expr) {}
+void AstPrinter::visit(SetExpr *expr) {
+  representation.append("(= ");
+  expr->object->accept(*this);
+  representation.append(" " + expr->name->lexeme + " ");
+  expr->value->accept(*this);
+  representation.append(")");
+}
 
 void AstPrinter::visit(SuperExpr *expr) {}
 

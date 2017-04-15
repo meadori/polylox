@@ -131,7 +131,6 @@ class CallExpr : public Expr {
 
   std::unique_ptr<Expr> clone() override {
     std::vector<std::unique_ptr<Expr>> new_arguments;
-    new_arguments.resize(arguments.size());
     for (auto &arg : arguments) new_arguments.push_back(arg->clone());
     return llox::make_unique<CallExpr>(callee->clone(), paren->clone(),
                                        new_arguments);
