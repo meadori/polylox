@@ -208,6 +208,14 @@ std::unique_ptr<Expr> Parser::primary() {
     return llox::make_unique<StringLiteralExpr>(literal);
   }
 
+  if (match(SUPER)) {
+    std::unique_ptr<Token> keyword = releaseLastToken();
+    if (!consume(DOT, "Expect '.' after 'super'.")) return nullptr;
+    if (!consume(IDENTIFIER, "Expect superclass method name.")) return nullptr;
+    std::unique_ptr<Token> method = releaseLastToken();
+    return llox::make_expr<SuperExpr>(keyword, method);
+  }
+
   if (match(FALSE)) return llox::make_unique<BoolLiteralExpr>(false);
 
   if (match(TRUE)) return llox::make_unique<BoolLiteralExpr>(true);

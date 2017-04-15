@@ -58,7 +58,9 @@ void AstPrinter::visit(SetExpr *expr) {
   representation.append(")");
 }
 
-void AstPrinter::visit(SuperExpr *expr) {}
+void AstPrinter::visit(SuperExpr *expr) {
+  representation.append("(super " + expr->method->lexeme + ")");
+}
 
 void AstPrinter::visit(ThisExpr *expr) { representation.append("this"); }
 
