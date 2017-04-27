@@ -9,6 +9,8 @@
 
 namespace llox {
 
+/// Expressions.
+
 class AssignExpr;
 class BinaryExpr;
 class CallExpr;
@@ -328,6 +330,226 @@ template <typename T, typename... Args>
 std::unique_ptr<Expr> make_expr(Args &&... args) {
   return std::unique_ptr<Expr>(new T(std::move(std::forward<Args>(args))...));
 }
+
+/// Statements.
+
+class BlockStmt;
+class ClassStmt;
+class ExpressionStmt;
+class FunctionStmt;
+class IfStmt;
+class PrintStmt;
+class ReturnStmt;
+class VarStmt;
+class WhileStmt;
+
+class StmtVisitor {
+ public:
+  virtual void visit(BlockStmt *stmt) = 0;
+  virtual void visit(ClassStmt *stmt) = 0;
+  virtual void visit(ExpressionStmt *stmt) = 0;
+  virtual void visit(FunctionStmt *stmt) = 0;
+  virtual void visit(IfStmt *stmt) = 0;
+  virtual void visit(PrintStmt *stmt) = 0;
+  virtual void visit(ReturnStmt *stmt) = 0;
+  virtual void visit(VarStmt *stmt) = 0;
+  virtual void visit(WhileStmt *stmt) = 0;
+};
+
+class Stmt {
+ public:
+  enum StmtKind {
+    BlockStmtKind,
+    ClassStmtKind,
+    ExpressionStmtKind,
+    FunctionStmtKind,
+    IfStmtKind,
+    PrintStmtKind,
+    ReturnStmtKind,
+    VarStmtKind,
+    WhileStmtKind,
+  };
+
+  StmtKind kind;
+
+  Stmt(StmtKind kind) : kind(kind) {}
+
+  virtual ~Stmt() {}
+
+  virtual std::unique_ptr<Stmt> clone() = 0;
+
+  virtual void accept(StmtVisitor &visitor) = 0;
+};
+
+class BlockStmt : public Stmt {
+ public:
+  std::vector<std::unique_ptr<Stmt>> statements;
+
+  BlockStmt(std::vector<std::unique_ptr<Stmt>> &block_statements)
+      : Stmt(BlockStmtKind) {
+    for (auto &stmt : block_statements) statements.push_back(std::move(stmt));
+  }
+
+  std::unique_ptr<Stmt> clone() override {
+    std::vector<std::unique_ptr<Stmt>> new_statements;
+    for (auto &stmt : statements) new_statements.push_back(stmt->clone());
+    return llox::make_unique<BlockStmt>(new_statements);
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
+
+class ExpressionStmt : public Stmt {
+ public:
+  std::unique_ptr<Expr> expression;
+
+  ExpressionStmt(std::unique_ptr<Expr> expression)
+      : Stmt(ExpressionStmtKind), expression(std::move(expression)) {}
+
+  std::unique_ptr<Stmt> clone() override {
+    return llox::make_unique<ExpressionStmt>(expression->clone());
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
+
+class FunctionStmt : public Stmt {
+ public:
+  std::unique_ptr<Token> name;
+  std::vector<std::unique_ptr<Token>> parameters;
+  std::vector<std::unique_ptr<Stmt>> body;
+
+  FunctionStmt(std::unique_ptr<Token> name,
+               std::vector<std::unique_ptr<Token>> &function_parameters,
+               std::vector<std::unique_ptr<Stmt>> &function_body)
+      : Stmt(FunctionStmtKind) {
+    for (auto &parameter : function_parameters)
+      parameters.push_back(std::move(parameter));
+    for (auto &stmt : function_body) body.push_back(std::move(stmt));
+  }
+
+  std::unique_ptr<Stmt> clone() override {
+    std::vector<std::unique_ptr<Token>> new_parameters;
+    for (auto &parameter : parameters)
+      new_parameters.push_back(parameter->clone());
+    std::vector<std::unique_ptr<Stmt>> new_body;
+    for (auto &stmt : body) new_body.push_back(stmt->clone());
+    return llox::make_unique<FunctionStmt>(name->clone(), new_parameters,
+                                           new_body);
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
+
+class ClassStmt : public Stmt {
+ public:
+  std::unique_ptr<Token> name;
+  std::unique_ptr<Expr> superclass;
+  std::vector<std::unique_ptr<Stmt>> methods;
+
+  ClassStmt(std::unique_ptr<Token> name, std::unique_ptr<Expr> superclass,
+            std::vector<std::unique_ptr<Stmt>> &class_methods)
+      : Stmt(BlockStmtKind),
+        name(std::move(name)),
+        superclass(std::move(superclass)) {
+    for (auto &method : class_methods) methods.push_back(std::move(method));
+  }
+
+  std::unique_ptr<Stmt> clone() override {
+    std::vector<std::unique_ptr<Stmt>> new_methods;
+    for (auto &method : methods) new_methods.push_back(method->clone());
+    return llox::make_unique<ClassStmt>(name->clone(), superclass->clone(),
+                                        new_methods);
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
+
+class IfStmt : public Stmt {
+ public:
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Stmt> thenBranch;
+  std::unique_ptr<Stmt> elseBranch;
+
+  IfStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> thenBranch,
+         std::unique_ptr<Stmt> elseBranch)
+      : Stmt(IfStmtKind),
+        condition(std::move(condition)),
+        thenBranch(std::move(thenBranch)),
+        elseBranch(std::move(elseBranch)) {}
+
+  std::unique_ptr<Stmt> clone() override {
+    return llox::make_unique<IfStmt>(condition->clone(), thenBranch->clone(),
+                                     elseBranch->clone());
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
+
+class PrintStmt : public Stmt {
+ public:
+  std::unique_ptr<Expr> expression;
+
+  PrintStmt(std::unique_ptr<Expr> expression)
+      : Stmt(PrintStmtKind), expression(std::move(expression)) {}
+
+  std::unique_ptr<Stmt> clone() override {
+    return llox::make_unique<PrintStmt>(expression->clone());
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
+
+class ReturnStmt : public Stmt {
+ public:
+  std::unique_ptr<Token> keyword;
+  std::unique_ptr<Expr> value;
+
+  ReturnStmt(std::unique_ptr<Token> keyword, std::unique_ptr<Expr> value)
+      : Stmt(ReturnStmtKind),
+        keyword(std::move(keyword)),
+        value(std::move(value)) {}
+
+  std::unique_ptr<Stmt> clone() override {
+    return llox::make_unique<ReturnStmt>(keyword->clone(), value->clone());
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
+
+class VarStmt : public Stmt {
+ public:
+  std::unique_ptr<Token> name;
+  std::unique_ptr<Expr> initializer;
+
+  VarStmt(std::unique_ptr<Token> name, std::unique_ptr<Expr> initializer)
+      : Stmt(VarStmtKind),
+        name(std::move(name)),
+        initializer(std::move(initializer)) {}
+
+  std::unique_ptr<Stmt> clone() override {
+    return llox::make_unique<VarStmt>(name->clone(), initializer->clone());
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
+
+class WhileStmt : public Stmt {
+ public:
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Stmt> body;
+
+  WhileStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body)
+      : Stmt(WhileStmtKind),
+        condition(std::move(condition)),
+        body(std::move(body)) {}
+
+  std::unique_ptr<Stmt> clone() override {
+    return llox::make_unique<WhileStmt>(condition->clone(), body->clone());
+  }
+
+  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+};
 
 }  // namespace llox
 
