@@ -191,4 +191,11 @@ void Interpreter::visit(ReturnStmt *stmt) {}
 
 void Interpreter::visit(VarStmt *stmt) {}
 
-void Interpreter::visit(WhileStmt *stmt) {}
+void Interpreter::visit(WhileStmt *stmt) {
+  evaluate(stmt->condition.get());
+  while (value->isTrue()) {
+    execute(stmt->body.get());
+    evaluate(stmt->condition.get());
+  }
+  value.release();
+}

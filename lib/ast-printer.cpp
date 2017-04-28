@@ -109,7 +109,12 @@ void AstPrinter::visit(ReturnStmt *stmt) {}
 
 void AstPrinter::visit(VarStmt *stmt) {}
 
-void AstPrinter::visit(WhileStmt *stmt) {}
+void AstPrinter::visit(WhileStmt *stmt) {
+  representation.append("(while ");
+  stmt->condition->accept(*this);
+  representation.append(" ");
+  stmt->body->accept(*this);
+}
 
 template <typename... ExprT>
 std::string AstPrinter::parenthesize(const std::string &name, ExprT... exprs) {

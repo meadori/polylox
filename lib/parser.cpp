@@ -20,6 +20,7 @@ std::unique_ptr<Stmt> Parser::declaration() { return statement(); }
 
 std::unique_ptr<Stmt> Parser::statement() {
   if (match(IF)) return ifStatement();
+  if (match(WHILE)) return whileStatement();
   if (match(PRINT)) return printStatement();
   if (check(LEFT_BRACE)) return llox::make_unique<BlockStmt>(*block());
 
@@ -38,6 +39,15 @@ std::unique_ptr<Stmt> Parser::ifStatement() {
   }
 
   return llox::make_stmt<IfStmt>(condition, thenBranch, elseBranch);
+}
+
+std::unique_ptr<Stmt> Parser::whileStatement() {
+  if (!consume(LEFT_PAREN, "Expect '(' after 'while'.")) return nullptr;
+  std::unique_ptr<Expr> condition = expression();
+  if (!consume(RIGHT_PAREN, "Expect ')' after if condition.")) return nullptr;
+  std::unique_ptr<Stmt> body = statement();
+
+  return llox::make_stmt<WhileStmt>(condition, body);
 }
 
 std::unique_ptr<Stmt> Parser::printStatement() {
