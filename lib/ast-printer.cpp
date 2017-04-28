@@ -72,7 +72,11 @@ void AstPrinter::visit(VariableExpr *expr) {
   representation.append(expr->name->lexeme);
 }
 
-void AstPrinter::visit(BlockStmt *stmt) {}
+void AstPrinter::visit(BlockStmt *stmt) {
+  representation.append("(block ");
+  for (auto &stmt : stmt->statements) stmt->accept(*this);
+  representation.append(")");
+}
 
 void AstPrinter::visit(ClassStmt *stmt) {}
 
@@ -80,7 +84,22 @@ void AstPrinter::visit(ExpressionStmt *stmt) {}
 
 void AstPrinter::visit(FunctionStmt *stmt) {}
 
-void AstPrinter::visit(IfStmt *stmt) {}
+void AstPrinter::visit(IfStmt *stmt) {
+  if (!stmt->elseBranch) {
+    representation.append("(if ");
+    stmt->condition->accept(*this);
+    representation.append(" ");
+    stmt->thenBranch->accept(*this);
+  } else {
+    representation.append("(if-else ");
+    stmt->condition->accept(*this);
+    representation.append(" ");
+    stmt->thenBranch->accept(*this);
+    representation.append(" ");
+    stmt->elseBranch->accept(*this);
+  }
+  representation.append(")");
+}
 
 void AstPrinter::visit(PrintStmt *stmt) {
   parenthesize("print", stmt->expression.get());

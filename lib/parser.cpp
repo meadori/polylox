@@ -19,8 +19,25 @@ std::unique_ptr<StmtList> Parser::parse() {
 std::unique_ptr<Stmt> Parser::declaration() { return statement(); }
 
 std::unique_ptr<Stmt> Parser::statement() {
+  if (match(IF)) return ifStatement();
   if (match(PRINT)) return printStatement();
+  if (check(LEFT_BRACE)) return llox::make_unique<BlockStmt>(*block());
+
   return expressionStatement();
+}
+
+std::unique_ptr<Stmt> Parser::ifStatement() {
+  if (!consume(LEFT_PAREN, "Expect '(' after 'if'.")) return nullptr;
+  std::unique_ptr<Expr> condition = expression();
+  if (!consume(RIGHT_PAREN, "Expect ')' after if condition.")) return nullptr;
+
+  std::unique_ptr<Stmt> thenBranch = statement();
+  std::unique_ptr<Stmt> elseBranch = nullptr;
+  if (match(ELSE)) {
+    elseBranch = statement();
+  }
+
+  return llox::make_stmt<IfStmt>(condition, thenBranch, elseBranch);
 }
 
 std::unique_ptr<Stmt> Parser::printStatement() {
@@ -33,6 +50,18 @@ std::unique_ptr<Stmt> Parser::expressionStatement() {
   std::unique_ptr<Expr> expr = expression();
   if (!consume(SEMICOLON, "Expect ';' after expression.")) return nullptr;
   return llox::make_stmt<ExpressionStmt>(expr);
+}
+
+std::unique_ptr<StmtList> Parser::block() {
+  if (!consume(LEFT_BRACE, "Expect '{' before block.")) return nullptr;
+  std::unique_ptr<StmtList> statements(new StmtList());
+
+  while (!check(RIGHT_BRACE) && !isAtEnd())
+    statements->push_back(declaration());
+
+  if (!consume(RIGHT_BRACE, "Expect '}' after block.")) return nullptr;
+
+  return statements;
 }
 
 std::unique_ptr<Expr> Parser::equality() {

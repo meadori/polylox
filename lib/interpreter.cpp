@@ -56,6 +56,7 @@ void Interpreter::visit(BinaryExpr *expr) {
     }
     case EQUAL_EQUAL: {
       value.reset(new BoolResult(left->equals(right.get())));
+      break;
     }
     case MINUS: {
       double leftValue = static_cast<NumberResult *>(left.get())->value;
@@ -158,7 +159,10 @@ void Interpreter::visit(UnaryExpr *expr) {
 
 void Interpreter::visit(VariableExpr *expr) {}
 
-void Interpreter::visit(BlockStmt *stmt) {}
+void Interpreter::visit(BlockStmt *stmt) {
+  for (auto &stmt : stmt->statements) stmt->accept(*this);
+  value.release();
+}
 
 void Interpreter::visit(ClassStmt *stmt) {}
 
@@ -166,7 +170,14 @@ void Interpreter::visit(ExpressionStmt *stmt) {}
 
 void Interpreter::visit(FunctionStmt *stmt) {}
 
-void Interpreter::visit(IfStmt *stmt) {}
+void Interpreter::visit(IfStmt *stmt) {
+  evaluate(stmt->condition.get());
+  if (value->isTrue())
+    execute(stmt->thenBranch.get());
+  else if (stmt->elseBranch)
+    execute(stmt->elseBranch.get());
+  value.release();
+}
 
 void Interpreter::visit(PrintStmt *stmt) {
   evaluate(stmt->expression.get());

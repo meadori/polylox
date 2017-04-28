@@ -28,11 +28,13 @@ class Parser {
 
   std::unique_ptr<Stmt> statement();
 
+  std::unique_ptr<Stmt> ifStatement();
+
   std::unique_ptr<Stmt> printStatement();
 
   std::unique_ptr<Stmt> expressionStatement();
 
-  std::unique_ptr<Stmt> classDeclaration();
+  std::unique_ptr<StmtList> block();
 
   bool check(TokenType type) {
     if (isAtEnd()) return false;
