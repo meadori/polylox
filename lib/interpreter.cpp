@@ -4,13 +4,15 @@
 
 using namespace llox;
 
-void Interpreter::interpret(Expr *expr) {
-  evaluate(expr);
+void Interpreter::interpret(StmtList &statements) {
+  for (auto &stmt : statements) execute(stmt.get());
 
   if (value) {
     std::cout << value->toString() << std::endl;
   }
 }
+
+void Interpreter::execute(Stmt *stmt) { stmt->accept(*this); }
 
 void Interpreter::evaluate(Expr *expr) { expr->accept(*this); }
 
@@ -155,3 +157,27 @@ void Interpreter::visit(UnaryExpr *expr) {
 }
 
 void Interpreter::visit(VariableExpr *expr) {}
+
+void Interpreter::visit(BlockStmt *stmt) {}
+
+void Interpreter::visit(ClassStmt *stmt) {}
+
+void Interpreter::visit(ExpressionStmt *stmt) {}
+
+void Interpreter::visit(FunctionStmt *stmt) {}
+
+void Interpreter::visit(IfStmt *stmt) {}
+
+void Interpreter::visit(PrintStmt *stmt) {
+  evaluate(stmt->expression.get());
+  if (value) {
+    std::cout << value->toString() << std::endl;
+  }
+  value.release();
+}
+
+void Interpreter::visit(ReturnStmt *stmt) {}
+
+void Interpreter::visit(VarStmt *stmt) {}
+
+void Interpreter::visit(WhileStmt *stmt) {}

@@ -5,14 +5,15 @@
 
 namespace llox {
 
-class AstPrinter : ExprVisitor {
+class AstPrinter : public ExprVisitor, public StmtVisitor {
   std::string representation;
 
  public:
   AstPrinter() {}
 
-  std::string print(Expr *expr);
+  std::string print(StmtList &statements);
 
+  /// Expressions.
   void visit(AssignExpr *expr) override;
   void visit(BinaryExpr *expr) override;
   void visit(CallExpr *expr) override;
@@ -28,6 +29,17 @@ class AstPrinter : ExprVisitor {
   void visit(ThisExpr *expr) override;
   void visit(UnaryExpr *expr) override;
   void visit(VariableExpr *expr) override;
+
+  /// Statements.
+  void visit(BlockStmt *stmt) override;
+  void visit(ClassStmt *stmt) override;
+  void visit(ExpressionStmt *stmt) override;
+  void visit(FunctionStmt *stmt) override;
+  void visit(IfStmt *stmt) override;
+  void visit(PrintStmt *stmt) override;
+  void visit(ReturnStmt *stmt) override;
+  void visit(VarStmt *stmt) override;
+  void visit(WhileStmt *stmt) override;
 
  private:
   template <typename... ExprT>

@@ -6,6 +6,35 @@
 
 using namespace llox;
 
+std::unique_ptr<StmtList> Parser::parse() {
+  std::unique_ptr<StmtList> statements(new StmtList());
+
+  while (!isAtEnd()) {
+    statements->push_back(std::move(declaration()));
+  }
+
+  return statements;
+}
+
+std::unique_ptr<Stmt> Parser::declaration() { return statement(); }
+
+std::unique_ptr<Stmt> Parser::statement() {
+  if (match(PRINT)) return printStatement();
+  return expressionStatement();
+}
+
+std::unique_ptr<Stmt> Parser::printStatement() {
+  std::unique_ptr<Expr> value = expression();
+  if (!consume(SEMICOLON, "Expect ';' after value.")) return nullptr;
+  return llox::make_stmt<PrintStmt>(value);
+}
+
+std::unique_ptr<Stmt> Parser::expressionStatement() {
+  std::unique_ptr<Expr> expr = expression();
+  if (!consume(SEMICOLON, "Expect ';' after expression.")) return nullptr;
+  return llox::make_stmt<ExpressionStmt>(expr);
+}
+
 std::unique_ptr<Expr> Parser::equality() {
   std::unique_ptr<Expr> expr = comparison();
   if (!expr) return nullptr;

@@ -15,14 +15,14 @@ static void run(const std::string &source) {
   llox::Scanner scanner(source);
   std::unique_ptr<llox::Scanner::TokenList> tokens = scanner.scanTokens();
   llox::Parser parser(std::move(tokens));
-  std::unique_ptr<llox::Expr> expression = parser.parse();
+  std::unique_ptr<llox::StmtList> statements = parser.parse();
 
-  if (expression) {
+  if (statements) {
     llox::AstPrinter printer;
-    std::cout << printer.print(expression.get()) << "\n";
+    std::cout << printer.print(*statements) << "\n";
 
     llox::Interpreter interpreter;
-    interpreter.interpret(expression.get());
+    interpreter.interpret(*statements);
   }
 }
 

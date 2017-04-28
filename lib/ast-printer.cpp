@@ -2,8 +2,8 @@
 
 using namespace llox;
 
-std::string AstPrinter::print(Expr *expr) {
-  expr->accept(*this);
+std::string AstPrinter::print(StmtList &statements) {
+  for (auto &stmt : statements) stmt->accept(*this);
   return representation;
 }
 
@@ -71,6 +71,26 @@ void AstPrinter::visit(UnaryExpr *expr) {
 void AstPrinter::visit(VariableExpr *expr) {
   representation.append(expr->name->lexeme);
 }
+
+void AstPrinter::visit(BlockStmt *stmt) {}
+
+void AstPrinter::visit(ClassStmt *stmt) {}
+
+void AstPrinter::visit(ExpressionStmt *stmt) {}
+
+void AstPrinter::visit(FunctionStmt *stmt) {}
+
+void AstPrinter::visit(IfStmt *stmt) {}
+
+void AstPrinter::visit(PrintStmt *stmt) {
+  parenthesize("print", stmt->expression.get());
+}
+
+void AstPrinter::visit(ReturnStmt *stmt) {}
+
+void AstPrinter::visit(VarStmt *stmt) {}
+
+void AstPrinter::visit(WhileStmt *stmt) {}
 
 template <typename... ExprT>
 std::string AstPrinter::parenthesize(const std::string &name, ExprT... exprs) {

@@ -83,17 +83,20 @@ class NilResult : public ExprResult {
   std::string toString() const override { return "nil"; }
 };
 
-class Interpreter : ExprVisitor {
+class Interpreter : public ExprVisitor, public StmtVisitor {
   std::unique_ptr<ExprResult> value;
 
  public:
   Interpreter() : value(nullptr) {}
 
-  void interpret(Expr *expr);
+  void interpret(StmtList &statements);
 
  private:
+  void execute(Stmt *stmt);
+
   void evaluate(Expr *expr);
 
+  /// Expressions.
   void visit(AssignExpr *expr) override;
   void visit(BinaryExpr *expr) override;
   void visit(CallExpr *expr) override;
@@ -109,6 +112,17 @@ class Interpreter : ExprVisitor {
   void visit(ThisExpr *expr) override;
   void visit(UnaryExpr *expr) override;
   void visit(VariableExpr *expr) override;
+
+  /// Statements.
+  void visit(BlockStmt *stmt) override;
+  void visit(ClassStmt *stmt) override;
+  void visit(ExpressionStmt *stmt) override;
+  void visit(FunctionStmt *stmt) override;
+  void visit(IfStmt *stmt) override;
+  void visit(PrintStmt *stmt) override;
+  void visit(ReturnStmt *stmt) override;
+  void visit(VarStmt *stmt) override;
+  void visit(WhileStmt *stmt) override;
 };
 
 }  // namespace llox

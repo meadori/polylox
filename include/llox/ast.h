@@ -551,6 +551,13 @@ class WhileStmt : public Stmt {
   void accept(StmtVisitor &visitor) override { visitor.visit(this); }
 };
 
+typedef std::vector<std::unique_ptr<Stmt>> StmtList;
+
+template <typename T, typename... Args>
+std::unique_ptr<Stmt> make_stmt(Args &&... args) {
+  return std::unique_ptr<Stmt>(new T(std::move(std::forward<Args>(args))...));
+}
+
 }  // namespace llox
 
 #endif

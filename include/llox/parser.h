@@ -16,13 +16,23 @@ class Parser {
   Parser(std::unique_ptr<Scanner::TokenList> tokens)
       : tokens(std::move(tokens)) {}
 
-  std::unique_ptr<Expr> parse() { return expression(); }
+  std::unique_ptr<StmtList> parse();
 
  private:
   template <typename... TokenT>
   bool match(TokenT... tokens);
 
   std::unique_ptr<Expr> expression() { return assignment(); }
+
+  std::unique_ptr<Stmt> declaration();
+
+  std::unique_ptr<Stmt> statement();
+
+  std::unique_ptr<Stmt> printStatement();
+
+  std::unique_ptr<Stmt> expressionStatement();
+
+  std::unique_ptr<Stmt> classDeclaration();
 
   bool check(TokenType type) {
     if (isAtEnd()) return false;
