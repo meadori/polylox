@@ -26,6 +26,8 @@ class Parser {
 
   std::unique_ptr<Stmt> declaration();
 
+  std::unique_ptr<Stmt> varDeclaration();
+
   std::unique_ptr<Stmt> statement();
 
   std::unique_ptr<Stmt> ifStatement();

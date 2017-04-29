@@ -16,7 +16,24 @@ std::unique_ptr<StmtList> Parser::parse() {
   return statements;
 }
 
-std::unique_ptr<Stmt> Parser::declaration() { return statement(); }
+std::unique_ptr<Stmt> Parser::declaration() {
+  if (match(VAR)) return varDeclaration();
+
+  return statement();
+}
+
+std::unique_ptr<Stmt> Parser::varDeclaration() {
+  if (!consume(IDENTIFIER, "Expect variable name.")) return nullptr;
+  std::unique_ptr<Token> name = releaseLastToken();
+
+  std::unique_ptr<Expr> initializer = nullptr;
+  if (match(EQUAL)) initializer = expression();
+
+  if (!consume(SEMICOLON, "Expect ';' after variable declaration."))
+    return nullptr;
+
+  return llox::make_stmt<VarStmt>(name, initializer);
+}
 
 std::unique_ptr<Stmt> Parser::statement() {
   if (match(IF)) return ifStatement();

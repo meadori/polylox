@@ -80,7 +80,9 @@ void AstPrinter::visit(BlockStmt *stmt) {
 
 void AstPrinter::visit(ClassStmt *stmt) {}
 
-void AstPrinter::visit(ExpressionStmt *stmt) {}
+void AstPrinter::visit(ExpressionStmt *stmt) {
+  parenthesize(";", stmt->expression.get());
+}
 
 void AstPrinter::visit(FunctionStmt *stmt) {}
 
@@ -107,7 +109,14 @@ void AstPrinter::visit(PrintStmt *stmt) {
 
 void AstPrinter::visit(ReturnStmt *stmt) {}
 
-void AstPrinter::visit(VarStmt *stmt) {}
+void AstPrinter::visit(VarStmt *stmt) {
+  representation.append("(var " + stmt->name->lexeme);
+  if (stmt->initializer) {
+    representation.append(" = ");
+    stmt->initializer->accept(*this);
+  }
+  representation.append(")");
+}
 
 void AstPrinter::visit(WhileStmt *stmt) {
   representation.append("(while ");
