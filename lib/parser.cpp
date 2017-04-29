@@ -38,6 +38,7 @@ std::unique_ptr<Stmt> Parser::varDeclaration() {
 
 std::unique_ptr<Stmt> Parser::statement() {
   if (match(IF)) return ifStatement();
+  if (match(FOR)) return forStatement();
   if (match(WHILE)) return whileStatement();
   if (match(PRINT)) return printStatement();
   if (check(LEFT_BRACE)) return llox::make_unique<BlockStmt>(*block());
@@ -57,6 +58,52 @@ std::unique_ptr<Stmt> Parser::ifStatement() {
   }
 
   return llox::make_stmt<IfStmt>(condition, thenBranch, elseBranch);
+}
+
+std::unique_ptr<Stmt> Parser::forStatement() {
+  if (!consume(LEFT_PAREN, "Expect '(' after 'for'.")) return nullptr;
+
+  std::unique_ptr<Stmt> initializer;
+  if (match(SEMICOLON)) {
+    initializer = nullptr;
+  } else if (match(VAR)) {
+    initializer = varDeclaration();
+  } else {
+    initializer = expressionStatement();
+  }
+
+  std::unique_ptr<Expr> condition = nullptr;
+  if (!check(SEMICOLON)) {
+    condition = expression();
+  }
+  if (!consume(SEMICOLON, "Expect ';' after loop condition.")) return nullptr;
+
+  std::unique_ptr<Stmt> increment = nullptr;
+  if (!check(RIGHT_PAREN)) {
+    increment = llox::make_stmt<ExpressionStmt>(expression());
+  }
+  if (!consume(RIGHT_PAREN, "Expect ')' after for clauses.")) return nullptr;
+
+  std::unique_ptr<Stmt> body = statement();
+
+  if (increment != nullptr) {
+    StmtList statements;
+    statements.push_back(std::move(body));
+    statements.push_back(std::move(increment));
+    body = llox::make_unique<BlockStmt>(statements);
+  }
+
+  if (condition == nullptr) condition = llox::make_expr<BoolLiteralExpr>(true);
+  body = llox::make_stmt<WhileStmt>(condition, body);
+
+  if (initializer != nullptr) {
+    StmtList statements;
+    statements.push_back(std::move(initializer));
+    statements.push_back(std::move(body));
+    body = llox::make_unique<BlockStmt>(statements);
+  }
+
+  return body;
 }
 
 std::unique_ptr<Stmt> Parser::whileStatement() {

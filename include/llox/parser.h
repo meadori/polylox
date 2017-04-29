@@ -32,6 +32,8 @@ class Parser {
 
   std::unique_ptr<Stmt> ifStatement();
 
+  std::unique_ptr<Stmt> forStatement();
+
   std::unique_ptr<Stmt> whileStatement();
 
   std::unique_ptr<Stmt> printStatement();
