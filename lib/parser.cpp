@@ -10,7 +10,8 @@ std::unique_ptr<StmtList> Parser::parse() {
   std::unique_ptr<StmtList> statements(new StmtList());
 
   while (!isAtEnd()) {
-    statements->push_back(std::move(declaration()));
+    std::unique_ptr<Stmt> stmt = declaration();
+    if (stmt) statements->push_back(std::move(stmt));
   }
 
   return statements;
