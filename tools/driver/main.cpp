@@ -11,7 +11,7 @@
 #include "llox/scanner.h"
 #include "llox/token.h"
 
-static void run(const std::string &source) {
+static void run(const std::string &source, llox::Interpreter &interpreter) {
   llox::Scanner scanner(source);
   std::unique_ptr<llox::Scanner::TokenList> tokens = scanner.scanTokens();
   llox::Parser parser(std::move(tokens));
@@ -21,25 +21,26 @@ static void run(const std::string &source) {
     llox::AstPrinter printer;
     std::cout << printer.print(*statements) << "\n";
 
-    llox::Interpreter interpreter;
     interpreter.interpret(*statements);
   }
 }
 
 static void runFile(const char *path) {
+  llox::Interpreter interpreter;
   std::ifstream t(path);
   std::string str((std::istreambuf_iterator<char>(t)),
                   std::istreambuf_iterator<char>());
-  run(str);
+  run(str, interpreter);
 }
 
 static void runPrompt() {
+  llox::Interpreter interpreter;
   for (;;) {
     std::cout << "> ";
 
     std::string source;
     std::getline(std::cin, source);
-    run(source);
+    run(source, interpreter);
   }
 }
 
