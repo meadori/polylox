@@ -1,7 +1,7 @@
 #ifndef LLOX_UTIL_H
 #define LLOX_UTIL_H
 
-#include <string>
+#include <memory>
 
 namespace llox {
 
