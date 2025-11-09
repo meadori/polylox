@@ -16,7 +16,7 @@ class Object {
 
   virtual bool isTrue() const { return true; }
 
-  virtual bool equals(Object *other) const = 0;
+  virtual bool equals(Object* other) const = 0;
 
   virtual std::unique_ptr<Object> clone() const = 0;
 
@@ -31,9 +31,9 @@ class Number : public Object {
 
   Number(double value) : Object(NumberKind), value(value) {}
 
-  bool equals(Object *other) const override {
+  bool equals(Object* other) const override {
     if (other->kind != NumberKind) return false;
-    return value == static_cast<Number *>(other)->value;
+    return value == static_cast<Number*>(other)->value;
   }
 
   std::unique_ptr<Object> clone() const override {
@@ -47,11 +47,11 @@ class String : public Object {
  public:
   std::string value;
 
-  String(const std::string &value) : Object(StringKind), value(value) {}
+  String(const std::string& value) : Object(StringKind), value(value) {}
 
-  bool equals(Object *other) const override {
+  bool equals(Object* other) const override {
     if (other->kind != StringKind) return false;
-    return value == static_cast<String *>(other)->value;
+    return value == static_cast<String*>(other)->value;
   }
 
   std::unique_ptr<Object> clone() const override {
@@ -69,9 +69,9 @@ class Bool : public Object {
 
   bool isTrue() const override { return value; }
 
-  bool equals(Object *other) const override {
+  bool equals(Object* other) const override {
     if (other->kind != BoolKind) return false;
-    return value == static_cast<Bool *>(other)->value;
+    return value == static_cast<Bool*>(other)->value;
   }
 
   std::unique_ptr<Object> clone() const override {
@@ -87,7 +87,7 @@ class Nil : public Object {
 
   bool isTrue() const override { return false; }
 
-  bool equals(Object *other) const override { return other->kind == NilKind; }
+  bool equals(Object* other) const override { return other->kind == NilKind; }
 
   std::unique_ptr<Object> clone() const override {
     return llox::make_unique<Nil>();

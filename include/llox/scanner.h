@@ -30,7 +30,7 @@ class Scanner {
   unsigned int line = 1;
 
  public:
-  Scanner(const std::string &source) : source(source) {
+  Scanner(const std::string& source) : source(source) {
     tokens.reset(new TokenList());
 
     keywords["and"] = TokenType::AND;
@@ -66,7 +66,7 @@ class Scanner {
     tokens->push_back(llox::make_unique<Token>(type, text, line));
   }
 
-  void addStringToken(const std::string &literal) {
+  void addStringToken(const std::string& literal) {
     std::string text = source.substr(start, current - start);
     tokens->push_back(llox::make_unique<StringToken>(text, line, literal));
   }

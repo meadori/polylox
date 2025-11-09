@@ -2,55 +2,55 @@
 
 using namespace llox;
 
-std::string AstPrinter::print(StmtList &statements) {
-  for (auto &stmt : statements) stmt->accept(*this);
+std::string AstPrinter::print(StmtList& statements) {
+  for (auto& stmt : statements) stmt->accept(*this);
   return representation;
 }
 
-void AstPrinter::visit(AssignExpr *expr) {
+void AstPrinter::visit(AssignExpr* expr) {
   parenthesize("= " + expr->name->lexeme, expr->value.get());
 }
 
-void AstPrinter::visit(BinaryExpr *expr) {
+void AstPrinter::visit(BinaryExpr* expr) {
   parenthesize(expr->op->lexeme, expr->left.get(), expr->right.get());
 }
 
-void AstPrinter::visit(CallExpr *expr) {
-  std::vector<Expr *> exprs;
+void AstPrinter::visit(CallExpr* expr) {
+  std::vector<Expr*> exprs;
   exprs.push_back(expr->callee.get());
-  for (auto &expr : expr->arguments) exprs.push_back(expr.get());
+  for (auto& expr : expr->arguments) exprs.push_back(expr.get());
   parenthesize("call", exprs);
 }
 
-void AstPrinter::visit(GetExpr *expr) {
+void AstPrinter::visit(GetExpr* expr) {
   representation.append("(. ");
   expr->object->accept(*this);
   representation.append(" " + expr->name->lexeme + ")");
 }
 
-void AstPrinter::visit(GroupingExpr *expr) {
+void AstPrinter::visit(GroupingExpr* expr) {
   parenthesize("group", expr->expression.get());
 }
 
-void AstPrinter::visit(BoolLiteralExpr *expr) {
+void AstPrinter::visit(BoolLiteralExpr* expr) {
   representation.append(std::to_string(expr->value));
 }
 
-void AstPrinter::visit(NilLiteralExpr *expr) { representation.append("nil"); }
+void AstPrinter::visit(NilLiteralExpr* expr) { representation.append("nil"); }
 
-void AstPrinter::visit(NumberLiteralExpr *expr) {
+void AstPrinter::visit(NumberLiteralExpr* expr) {
   representation.append(std::to_string(expr->value));
 }
 
-void AstPrinter::visit(StringLiteralExpr *expr) {
+void AstPrinter::visit(StringLiteralExpr* expr) {
   representation.append(expr->value);
 }
 
-void AstPrinter::visit(LogicalExpr *expr) {
+void AstPrinter::visit(LogicalExpr* expr) {
   parenthesize(expr->op->lexeme, expr->left.get(), expr->right.get());
 }
 
-void AstPrinter::visit(SetExpr *expr) {
+void AstPrinter::visit(SetExpr* expr) {
   representation.append("(= ");
   expr->object->accept(*this);
   representation.append(" " + expr->name->lexeme + " ");
@@ -58,35 +58,35 @@ void AstPrinter::visit(SetExpr *expr) {
   representation.append(")");
 }
 
-void AstPrinter::visit(SuperExpr *expr) {
+void AstPrinter::visit(SuperExpr* expr) {
   representation.append("(super " + expr->method->lexeme + ")");
 }
 
-void AstPrinter::visit(ThisExpr *expr) { representation.append("this"); }
+void AstPrinter::visit(ThisExpr* expr) { representation.append("this"); }
 
-void AstPrinter::visit(UnaryExpr *expr) {
+void AstPrinter::visit(UnaryExpr* expr) {
   parenthesize(expr->op->lexeme, expr->right.get());
 }
 
-void AstPrinter::visit(VariableExpr *expr) {
+void AstPrinter::visit(VariableExpr* expr) {
   representation.append(expr->name->lexeme);
 }
 
-void AstPrinter::visit(BlockStmt *stmt) {
+void AstPrinter::visit(BlockStmt* stmt) {
   representation.append("(block ");
-  for (auto &stmt : stmt->statements) stmt->accept(*this);
+  for (auto& stmt : stmt->statements) stmt->accept(*this);
   representation.append(")");
 }
 
-void AstPrinter::visit(ClassStmt *stmt) {}
+void AstPrinter::visit(ClassStmt* stmt) {}
 
-void AstPrinter::visit(ExpressionStmt *stmt) {
+void AstPrinter::visit(ExpressionStmt* stmt) {
   parenthesize(";", stmt->expression.get());
 }
 
-void AstPrinter::visit(FunctionStmt *stmt) {}
+void AstPrinter::visit(FunctionStmt* stmt) {}
 
-void AstPrinter::visit(IfStmt *stmt) {
+void AstPrinter::visit(IfStmt* stmt) {
   if (!stmt->elseBranch) {
     representation.append("(if ");
     stmt->condition->accept(*this);
@@ -103,13 +103,13 @@ void AstPrinter::visit(IfStmt *stmt) {
   representation.append(")");
 }
 
-void AstPrinter::visit(PrintStmt *stmt) {
+void AstPrinter::visit(PrintStmt* stmt) {
   parenthesize("print", stmt->expression.get());
 }
 
-void AstPrinter::visit(ReturnStmt *stmt) {}
+void AstPrinter::visit(ReturnStmt* stmt) {}
 
-void AstPrinter::visit(VarStmt *stmt) {
+void AstPrinter::visit(VarStmt* stmt) {
   representation.append("(var " + stmt->name->lexeme);
   if (stmt->initializer) {
     representation.append(" = ");
@@ -118,7 +118,7 @@ void AstPrinter::visit(VarStmt *stmt) {
   representation.append(")");
 }
 
-void AstPrinter::visit(WhileStmt *stmt) {
+void AstPrinter::visit(WhileStmt* stmt) {
   representation.append("(while ");
   stmt->condition->accept(*this);
   representation.append(" ");
@@ -126,17 +126,17 @@ void AstPrinter::visit(WhileStmt *stmt) {
 }
 
 template <typename... ExprT>
-std::string AstPrinter::parenthesize(const std::string &name, ExprT... exprs) {
-  std::vector<Expr *> exprvec = {exprs...};
+std::string AstPrinter::parenthesize(const std::string& name, ExprT... exprs) {
+  std::vector<Expr*> exprvec = {exprs...};
   return parenthesize(name, exprvec);
 }
 
 template <typename ExprT>
-std::string AstPrinter::parenthesize(const std::string &name,
-                                     const std::vector<ExprT> &exprs) {
+std::string AstPrinter::parenthesize(const std::string& name,
+                                     const std::vector<ExprT>& exprs) {
   representation.append("(").append(name);
 
-  for (auto &expr : exprs) {
+  for (auto& expr : exprs) {
     representation.append(" ");
     expr->accept(*this);
   }

@@ -1,11 +1,11 @@
 #ifndef LLOX_AST_H
 #define LLOX_AST_H
 
-#include "token.h"
-#include "util.h"
-
 #include <string>
 #include <vector>
+
+#include "token.h"
+#include "util.h"
 
 namespace llox {
 
@@ -29,21 +29,21 @@ class VariableExpr;
 
 class ExprVisitor {
  public:
-  virtual void visit(AssignExpr *expr) = 0;
-  virtual void visit(BinaryExpr *expr) = 0;
-  virtual void visit(CallExpr *expr) = 0;
-  virtual void visit(GetExpr *expr) = 0;
-  virtual void visit(GroupingExpr *expr) = 0;
-  virtual void visit(BoolLiteralExpr *expr) = 0;
-  virtual void visit(NilLiteralExpr *expr) = 0;
-  virtual void visit(NumberLiteralExpr *expr) = 0;
-  virtual void visit(StringLiteralExpr *expr) = 0;
-  virtual void visit(LogicalExpr *expr) = 0;
-  virtual void visit(SetExpr *expr) = 0;
-  virtual void visit(SuperExpr *expr) = 0;
-  virtual void visit(ThisExpr *expr) = 0;
-  virtual void visit(UnaryExpr *expr) = 0;
-  virtual void visit(VariableExpr *expr) = 0;
+  virtual void visit(AssignExpr* expr) = 0;
+  virtual void visit(BinaryExpr* expr) = 0;
+  virtual void visit(CallExpr* expr) = 0;
+  virtual void visit(GetExpr* expr) = 0;
+  virtual void visit(GroupingExpr* expr) = 0;
+  virtual void visit(BoolLiteralExpr* expr) = 0;
+  virtual void visit(NilLiteralExpr* expr) = 0;
+  virtual void visit(NumberLiteralExpr* expr) = 0;
+  virtual void visit(StringLiteralExpr* expr) = 0;
+  virtual void visit(LogicalExpr* expr) = 0;
+  virtual void visit(SetExpr* expr) = 0;
+  virtual void visit(SuperExpr* expr) = 0;
+  virtual void visit(ThisExpr* expr) = 0;
+  virtual void visit(UnaryExpr* expr) = 0;
+  virtual void visit(VariableExpr* expr) = 0;
 };
 
 class Expr {
@@ -74,7 +74,7 @@ class Expr {
 
   virtual std::unique_ptr<Expr> clone() = 0;
 
-  virtual void accept(ExprVisitor &visitor) = 0;
+  virtual void accept(ExprVisitor& visitor) = 0;
 };
 
 class AssignExpr : public Expr {
@@ -91,7 +91,7 @@ class AssignExpr : public Expr {
     return llox::make_unique<AssignExpr>(name->clone(), value->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class BinaryExpr : public Expr {
@@ -112,7 +112,7 @@ class BinaryExpr : public Expr {
                                          right->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class CallExpr : public Expr {
@@ -122,23 +122,23 @@ class CallExpr : public Expr {
   std::vector<std::unique_ptr<Expr>> arguments;
 
   CallExpr(std::unique_ptr<Expr> callee, std::unique_ptr<Token> paren,
-           std::vector<std::unique_ptr<Expr>> &actual_arguments)
+           std::vector<std::unique_ptr<Expr>>& actual_arguments)
       : Expr(Expr::CallExprKind),
         callee(std::move(callee)),
         paren(std::move(paren)) {
-    for (auto &elem : actual_arguments) {
+    for (auto& elem : actual_arguments) {
       arguments.push_back(std::move(elem));
     }
   }
 
   std::unique_ptr<Expr> clone() override {
     std::vector<std::unique_ptr<Expr>> new_arguments;
-    for (auto &arg : arguments) new_arguments.push_back(arg->clone());
+    for (auto& arg : arguments) new_arguments.push_back(arg->clone());
     return llox::make_unique<CallExpr>(callee->clone(), paren->clone(),
                                        new_arguments);
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class GetExpr : public Expr {
@@ -155,7 +155,7 @@ class GetExpr : public Expr {
     return llox::make_unique<GetExpr>(object->clone(), name->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class GroupingExpr : public Expr {
@@ -169,7 +169,7 @@ class GroupingExpr : public Expr {
     return llox::make_unique<GroupingExpr>(expression->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class BoolLiteralExpr : public Expr {
@@ -182,7 +182,7 @@ class BoolLiteralExpr : public Expr {
     return llox::make_unique<BoolLiteralExpr>(value);
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class NilLiteralExpr : public Expr {
@@ -193,7 +193,7 @@ class NilLiteralExpr : public Expr {
     return llox::make_unique<NilLiteralExpr>();
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class NumberLiteralExpr : public Expr {
@@ -207,21 +207,21 @@ class NumberLiteralExpr : public Expr {
     return llox::make_unique<NumberLiteralExpr>(value);
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class StringLiteralExpr : public Expr {
  public:
   std::string value;
 
-  StringLiteralExpr(std::string &value)
+  StringLiteralExpr(std::string& value)
       : Expr(Expr::StringLiteralExprKind), value(value) {}
 
   std::unique_ptr<Expr> clone() override {
     return llox::make_unique<StringLiteralExpr>(value);
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class LogicalExpr : public Expr {
@@ -242,7 +242,7 @@ class LogicalExpr : public Expr {
                                           right->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class SetExpr : public Expr {
@@ -263,7 +263,7 @@ class SetExpr : public Expr {
                                       value->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class SuperExpr : public Expr {
@@ -280,7 +280,7 @@ class SuperExpr : public Expr {
     return llox::make_unique<SuperExpr>(keyword->clone(), method->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class ThisExpr : public Expr {
@@ -294,7 +294,7 @@ class ThisExpr : public Expr {
     return llox::make_unique<ThisExpr>(keyword->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class UnaryExpr : public Expr {
@@ -309,7 +309,7 @@ class UnaryExpr : public Expr {
     return llox::make_unique<UnaryExpr>(op->clone(), right->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 class VariableExpr : public Expr {
@@ -323,11 +323,11 @@ class VariableExpr : public Expr {
     return llox::make_unique<VariableExpr>(name->clone());
   }
 
-  void accept(ExprVisitor &visitor) override { visitor.visit(this); }
+  void accept(ExprVisitor& visitor) override { visitor.visit(this); }
 };
 
 template <typename T, typename... Args>
-std::unique_ptr<Expr> make_expr(Args &&... args) {
+std::unique_ptr<Expr> make_expr(Args&&... args) {
   return std::unique_ptr<Expr>(new T(std::move(std::forward<Args>(args))...));
 }
 
@@ -345,15 +345,15 @@ class WhileStmt;
 
 class StmtVisitor {
  public:
-  virtual void visit(BlockStmt *stmt) = 0;
-  virtual void visit(ClassStmt *stmt) = 0;
-  virtual void visit(ExpressionStmt *stmt) = 0;
-  virtual void visit(FunctionStmt *stmt) = 0;
-  virtual void visit(IfStmt *stmt) = 0;
-  virtual void visit(PrintStmt *stmt) = 0;
-  virtual void visit(ReturnStmt *stmt) = 0;
-  virtual void visit(VarStmt *stmt) = 0;
-  virtual void visit(WhileStmt *stmt) = 0;
+  virtual void visit(BlockStmt* stmt) = 0;
+  virtual void visit(ClassStmt* stmt) = 0;
+  virtual void visit(ExpressionStmt* stmt) = 0;
+  virtual void visit(FunctionStmt* stmt) = 0;
+  virtual void visit(IfStmt* stmt) = 0;
+  virtual void visit(PrintStmt* stmt) = 0;
+  virtual void visit(ReturnStmt* stmt) = 0;
+  virtual void visit(VarStmt* stmt) = 0;
+  virtual void visit(WhileStmt* stmt) = 0;
 };
 
 class Stmt {
@@ -378,25 +378,25 @@ class Stmt {
 
   virtual std::unique_ptr<Stmt> clone() = 0;
 
-  virtual void accept(StmtVisitor &visitor) = 0;
+  virtual void accept(StmtVisitor& visitor) = 0;
 };
 
 class BlockStmt : public Stmt {
  public:
   std::vector<std::unique_ptr<Stmt>> statements;
 
-  BlockStmt(std::vector<std::unique_ptr<Stmt>> &block_statements)
+  BlockStmt(std::vector<std::unique_ptr<Stmt>>& block_statements)
       : Stmt(BlockStmtKind) {
-    for (auto &stmt : block_statements) statements.push_back(std::move(stmt));
+    for (auto& stmt : block_statements) statements.push_back(std::move(stmt));
   }
 
   std::unique_ptr<Stmt> clone() override {
     std::vector<std::unique_ptr<Stmt>> new_statements;
-    for (auto &stmt : statements) new_statements.push_back(stmt->clone());
+    for (auto& stmt : statements) new_statements.push_back(stmt->clone());
     return llox::make_unique<BlockStmt>(new_statements);
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 class ExpressionStmt : public Stmt {
@@ -410,7 +410,7 @@ class ExpressionStmt : public Stmt {
     return llox::make_unique<ExpressionStmt>(expression->clone());
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 class FunctionStmt : public Stmt {
@@ -420,25 +420,25 @@ class FunctionStmt : public Stmt {
   std::vector<std::unique_ptr<Stmt>> body;
 
   FunctionStmt(std::unique_ptr<Token> name,
-               std::vector<std::unique_ptr<Token>> &function_parameters,
-               std::vector<std::unique_ptr<Stmt>> &function_body)
+               std::vector<std::unique_ptr<Token>>& function_parameters,
+               std::vector<std::unique_ptr<Stmt>>& function_body)
       : Stmt(FunctionStmtKind) {
-    for (auto &parameter : function_parameters)
+    for (auto& parameter : function_parameters)
       parameters.push_back(std::move(parameter));
-    for (auto &stmt : function_body) body.push_back(std::move(stmt));
+    for (auto& stmt : function_body) body.push_back(std::move(stmt));
   }
 
   std::unique_ptr<Stmt> clone() override {
     std::vector<std::unique_ptr<Token>> new_parameters;
-    for (auto &parameter : parameters)
+    for (auto& parameter : parameters)
       new_parameters.push_back(parameter->clone());
     std::vector<std::unique_ptr<Stmt>> new_body;
-    for (auto &stmt : body) new_body.push_back(stmt->clone());
+    for (auto& stmt : body) new_body.push_back(stmt->clone());
     return llox::make_unique<FunctionStmt>(name->clone(), new_parameters,
                                            new_body);
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 class ClassStmt : public Stmt {
@@ -448,21 +448,21 @@ class ClassStmt : public Stmt {
   std::vector<std::unique_ptr<Stmt>> methods;
 
   ClassStmt(std::unique_ptr<Token> name, std::unique_ptr<Expr> superclass,
-            std::vector<std::unique_ptr<Stmt>> &class_methods)
+            std::vector<std::unique_ptr<Stmt>>& class_methods)
       : Stmt(BlockStmtKind),
         name(std::move(name)),
         superclass(std::move(superclass)) {
-    for (auto &method : class_methods) methods.push_back(std::move(method));
+    for (auto& method : class_methods) methods.push_back(std::move(method));
   }
 
   std::unique_ptr<Stmt> clone() override {
     std::vector<std::unique_ptr<Stmt>> new_methods;
-    for (auto &method : methods) new_methods.push_back(method->clone());
+    for (auto& method : methods) new_methods.push_back(method->clone());
     return llox::make_unique<ClassStmt>(name->clone(), superclass->clone(),
                                         new_methods);
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 class IfStmt : public Stmt {
@@ -483,7 +483,7 @@ class IfStmt : public Stmt {
                                      elseBranch->clone());
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 class PrintStmt : public Stmt {
@@ -497,7 +497,7 @@ class PrintStmt : public Stmt {
     return llox::make_unique<PrintStmt>(expression->clone());
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 class ReturnStmt : public Stmt {
@@ -514,7 +514,7 @@ class ReturnStmt : public Stmt {
     return llox::make_unique<ReturnStmt>(keyword->clone(), value->clone());
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 class VarStmt : public Stmt {
@@ -531,7 +531,7 @@ class VarStmt : public Stmt {
     return llox::make_unique<VarStmt>(name->clone(), initializer->clone());
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 class WhileStmt : public Stmt {
@@ -548,13 +548,13 @@ class WhileStmt : public Stmt {
     return llox::make_unique<WhileStmt>(condition->clone(), body->clone());
   }
 
-  void accept(StmtVisitor &visitor) override { visitor.visit(this); }
+  void accept(StmtVisitor& visitor) override { visitor.visit(this); }
 };
 
 typedef std::vector<std::unique_ptr<Stmt>> StmtList;
 
 template <typename T, typename... Args>
-std::unique_ptr<Stmt> make_stmt(Args &&... args) {
+std::unique_ptr<Stmt> make_stmt(Args&&... args) {
   return std::unique_ptr<Stmt>(new T(std::move(std::forward<Args>(args))...));
 }
 

@@ -1,10 +1,10 @@
 #ifndef LLOX_PARSER_H
 #define LLOX_PARSER_H
 
+#include <vector>
+
 #include "ast.h"
 #include "scanner.h"
-
-#include <vector>
 
 namespace llox {
 
@@ -47,16 +47,16 @@ class Parser {
     return peek()->type == type;
   }
 
-  Token *advance() {
+  Token* advance() {
     if (!isAtEnd()) current++;
     return previous();
   }
 
   bool isAtEnd() const { return peek()->type == END; }
 
-  Token *peek() const { return tokens->at(current).get(); }
+  Token* peek() const { return tokens->at(current).get(); }
 
-  Token *previous() const { return tokens->at(current - 1).get(); }
+  Token* previous() const { return tokens->at(current - 1).get(); }
 
   std::unique_ptr<Token> releaseLastToken() {
     return std::move(tokens->at(current - 1));
@@ -84,7 +84,7 @@ class Parser {
 
   std::unique_ptr<Expr> primary();
 
-  bool consume(TokenType type, const std::string &message);
+  bool consume(TokenType type, const std::string& message);
 };
 
 }  // namespace llox

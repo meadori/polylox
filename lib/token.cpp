@@ -1,6 +1,6 @@
-#include <iostream>
-
 #include "llox/token.h"
+
+#include <iostream>
 
 namespace llox {
 

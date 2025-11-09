@@ -1,9 +1,9 @@
 #ifndef LLOX_TOKEN_H
 #define LLOX_TOKEN_H
 
-#include "util.h"
-
 #include <string>
+
+#include "util.h"
 
 namespace llox {
 
@@ -63,7 +63,7 @@ class Token {
   std::string lexeme;
   unsigned int line;
 
-  Token(TokenType type, const std::string &lexeme, unsigned int line)
+  Token(TokenType type, const std::string& lexeme, unsigned int line)
       : type(type), lexeme(lexeme), line(line) {}
 
   virtual std::unique_ptr<Token> clone() const {
@@ -79,8 +79,8 @@ class StringToken : public Token {
  public:
   std::string literal;
 
-  StringToken(const std::string &lexeme, unsigned int line,
-              const std::string &literal)
+  StringToken(const std::string& lexeme, unsigned int line,
+              const std::string& literal)
       : Token(STRING, lexeme, line), literal(literal) {}
 
   std::unique_ptr<Token> clone() const override {
@@ -96,7 +96,7 @@ class NumberToken : public Token {
  public:
   double literal;
 
-  NumberToken(const std::string &lexeme, unsigned int line, double literal)
+  NumberToken(const std::string& lexeme, unsigned int line, double literal)
       : Token(NUMBER, lexeme, line), literal(literal) {}
 
   std::unique_ptr<Token> clone() const override {
@@ -108,7 +108,7 @@ class NumberToken : public Token {
   }
 };
 
-std::ostream &operator<<(std::ostream &out, const Token &token);
+std::ostream& operator<<(std::ostream& out, const Token& token);
 
 }  // namespace llox
 

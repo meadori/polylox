@@ -1,9 +1,9 @@
 #ifndef LLOX_ENVIRONMENT_H
 #define LLOX_ENVIRONMENT_H
 
-#include "object.h"
-
 #include <map>
+
+#include "object.h"
 
 namespace llox {
 
@@ -12,11 +12,11 @@ class Environment {
   std::map<std::string, ObjectPtr> values;
 
  public:
-  void define(const std::string &name, ObjectPtr value) {
+  void define(const std::string& name, ObjectPtr value) {
     values[name] = std::move(value);
   }
 
-  Object *get(const std::string &name) const {
+  Object* get(const std::string& name) const {
     auto It = values.find(name);
     if (It != values.end()) return It->second.get();
     return nullptr;

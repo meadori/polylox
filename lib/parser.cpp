@@ -1,8 +1,9 @@
 #include "llox/parser.h"
-#include "llox/util.h"
 
 #include <iostream>
 #include <vector>
+
+#include "llox/util.h"
 
 using namespace llox;
 
@@ -179,12 +180,12 @@ std::unique_ptr<Expr> Parser::assignment() {
     switch (expr->kind) {
       case Expr::VariableExprKind: {
         std::unique_ptr<Token> name =
-            static_cast<VariableExpr *>(expr.get())->name->clone();
+            static_cast<VariableExpr*>(expr.get())->name->clone();
         expr = llox::make_expr<AssignExpr>(name, value);
         break;
       }
       case Expr::GetExprKind: {
-        GetExpr *variable = static_cast<GetExpr *>(expr.get());
+        GetExpr* variable = static_cast<GetExpr*>(expr.get());
         std::unique_ptr<Token> name = variable->name->clone();
         std::unique_ptr<Expr> object = variable->object->clone();
         expr = llox::make_expr<SetExpr>(object, name, value);
@@ -331,13 +332,13 @@ std::unique_ptr<Expr> Parser::call() {
 std::unique_ptr<Expr> Parser::primary() {
   if (match(NUMBER)) {
     std::unique_ptr<Token> number = releaseLastToken();
-    double literal = static_cast<NumberToken *>(number.get())->literal;
+    double literal = static_cast<NumberToken*>(number.get())->literal;
     return llox::make_unique<NumberLiteralExpr>(literal);
   }
 
   if (match(STRING)) {
     std::unique_ptr<Token> string = releaseLastToken();
-    std::string literal = static_cast<StringToken *>(string.get())->literal;
+    std::string literal = static_cast<StringToken*>(string.get())->literal;
     return llox::make_unique<StringLiteralExpr>(literal);
   }
 
@@ -377,7 +378,7 @@ std::unique_ptr<Expr> Parser::primary() {
   return nullptr;
 }
 
-bool Parser::consume(TokenType type, const std::string &message) {
+bool Parser::consume(TokenType type, const std::string& message) {
   if (check(type)) {
     advance();
     return true;

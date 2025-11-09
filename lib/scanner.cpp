@@ -1,7 +1,7 @@
+#include "llox/scanner.h"
+
 #include <iostream>
 #include <memory>
-
-#include "llox/scanner.h"
 
 using namespace llox;
 
