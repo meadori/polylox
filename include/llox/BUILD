@@ -1,7 +1,7 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
-  name = "libpolylox_headers",
+  name = "liblox_headers",
   hdrs = [
     "ast-printer.h", "ast.h",
     "environment.h", "interpreter.h",
