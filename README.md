@@ -1,5 +1,5 @@
 # polylox
 
-This is an implementation of the Lox language as specified in Bob Nystrom's wonderful book [Crafting Interpreters](http://craftinginterpreters.com). The goal is to have implementations of the tree-walk interpreter and bytecode interpreter in multiple languages.
+<img src="polylox.jpg" width="256" height="256"/>
 
-![Polylox Logo](polylox.jpg)
+This is an implementation of the Lox language as specified in Bob Nystrom's wonderful book [Crafting Interpreters](http://craftinginterpreters.com). The goal is to have implementations of the tree-walk interpreter and bytecode interpreter in multiple languages.
