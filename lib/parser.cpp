@@ -260,12 +260,12 @@ std::unique_ptr<Expr> Parser::term() {
   return expr;
 }
 
-// factor -> unary ( ( "/" | "*" ) unary )*
+// factor -> unary ( ( "/" | "*" | "%") unary )*
 std::unique_ptr<Expr> Parser::factor() {
   std::unique_ptr<Expr> expr = unary();
   if (!expr) return nullptr;
 
-  while (match(SLASH, STAR)) {
+  while (match(SLASH, STAR, PERCENT)) {
     std::unique_ptr<Token> op = releaseLastToken();
     std::unique_ptr<Expr> right = unary();
     if (!right) return nullptr;

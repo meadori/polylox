@@ -1,5 +1,6 @@
 #include "llox/interpreter.h"
 
+#include <cmath>
 #include <iostream>
 
 using namespace llox;
@@ -93,6 +94,12 @@ void Interpreter::visit(BinaryExpr* expr) {
       double leftValue = static_cast<Number*>(left.get())->value;
       double rightValue = static_cast<Number*>(right.get())->value;
       value.reset(new Number(leftValue * rightValue));
+      break;
+    }
+    case PERCENT: {
+      double leftValue = static_cast<Number*>(left.get())->value;
+      double rightValue = static_cast<Number*>(right.get())->value;
+      value.reset(new Number(std::fmod(leftValue, rightValue)));
       break;
     }
     default:

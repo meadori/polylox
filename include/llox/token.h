@@ -16,6 +16,7 @@ enum TokenType {
   COMMA,
   DOT,
   MINUS,
+  PERCENT,
   PLUS,
   SEMICOLON,
   SLASH,
