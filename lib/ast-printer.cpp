@@ -1,4 +1,4 @@
-#include "llox/ast-printer.h"
+#include "lox/ast-printer.h"
 
 using namespace llox;
 

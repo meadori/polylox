@@ -6,12 +6,12 @@
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "llox/ast-printer.h"
-#include "llox/ast.h"
-#include "llox/interpreter.h"
-#include "llox/parser.h"
-#include "llox/scanner.h"
-#include "llox/token.h"
+#include "lox/ast-printer.h"
+#include "lox/ast.h"
+#include "lox/interpreter.h"
+#include "lox/parser.h"
+#include "lox/scanner.h"
+#include "lox/token.h"
 
 ABSL_FLAG(bool, print_ast, false,
           "Print the Abstract Syntax Tree (AST) of the input file.");

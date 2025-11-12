@@ -11,6 +11,6 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//include/llox:liblox_headers",
+        "//include/lox:liblox_headers",
     ],
 )

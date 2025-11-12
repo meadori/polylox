@@ -1,4 +1,4 @@
-#include "llox/scanner.h"
+#include "lox/scanner.h"
 
 #include <iostream>
 #include <memory>

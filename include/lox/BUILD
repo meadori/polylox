@@ -13,7 +13,7 @@ cc_library(
         "token.h",
         "util.h",
     ],
-    include_prefix = "llox",
+    include_prefix = "lox",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
 )

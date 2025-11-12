@@ -1,4 +1,4 @@
-#include "llox/token.h"
+#include "lox/token.h"
 
 #include <iostream>
 

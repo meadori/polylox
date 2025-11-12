@@ -1,4 +1,4 @@
-#include "llox/interpreter.h"
+#include "lox/interpreter.h"
 
 #include <cmath>
 #include <iostream>

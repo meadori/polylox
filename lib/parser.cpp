@@ -1,9 +1,9 @@
-#include "llox/parser.h"
+#include "lox/parser.h"
 
 #include <iostream>
 #include <vector>
 
-#include "llox/util.h"
+#include "lox/util.h"
 
 using namespace llox;
 
