@@ -1,11 +1,5 @@
-// fib(0) = 0
-// fib(1) = 1
-// fib(2) = 1
-// fib(3) = 2
-// fib(4) = 3
-// fib(5) = 5
-// ...
-// fib(n) = fib(n - 1) + fib(n - 2)
+// RUN-AST: lox -print_ast /home/meadori/Code/Src/polylox/test/fib.lox
+// RUN-EVAL: lox test/fib.lox
 
 var v = 0;
 var w = 1;
@@ -16,3 +10,30 @@ for (var i = 0; i < 10; i = i + 1) {
   v = w;
   w = x;
 }
+
+// CHECK-AST: (var v = 0.000000)
+// CHECK-AST: (var w = 1.000000)
+// CHECK-AST: (block
+// CHECK-AST:   (var i = 0.000000)
+// CHECK-AST:   (while (< i 10.000000)
+// CHECK-AST:     (block
+// CHECK-AST:       (block
+// CHECK-AST:         (var x = (+ v w))
+// CHECK-AST:         (print x)
+// CHECK-AST:         (; (= v w))
+// CHECK-AST:         (; (= w x))
+// CHECK-AST:       )
+// CHECK-AST:       (; (= i (+ i 1.000000)))
+// CHECK-AST:     )
+// CHECK-AST:   )
+
+// CHECK-EVAL: 1.000000
+// CHECK-EVAL: 2.000000
+// CHECK-EVAL: 3.000000
+// CHECK-EVAL: 5.000000
+// CHECK-EVAL: 8.000000
+// CHECK-EVAL: 13.000000
+// CHECK-EVAL: 21.000000
+// CHECK-EVAL: 34.000000
+// CHECK-EVAL: 55.000000
+// CHECK-EVAL: 89.000000

@@ -55,7 +55,7 @@ void AstPrinter::visit(SetExpr* expr) {
   expr->object->accept(*this);
   representation.append(" " + expr->name->lexeme + " ");
   expr->value->accept(*this);
-  representation.append(")");
+  representation.append(")\n");
 }
 
 void AstPrinter::visit(SuperExpr* expr) {
@@ -73,15 +73,16 @@ void AstPrinter::visit(VariableExpr* expr) {
 }
 
 void AstPrinter::visit(BlockStmt* stmt) {
-  representation.append("(block ");
+  representation.append("(block\n");
   for (auto& stmt : stmt->statements) stmt->accept(*this);
-  representation.append(")");
+  representation.append(")\n");
 }
 
 void AstPrinter::visit(ClassStmt* stmt) {}
 
 void AstPrinter::visit(ExpressionStmt* stmt) {
   parenthesize(";", stmt->expression.get());
+  representation.append("\n");
 }
 
 void AstPrinter::visit(FunctionStmt* stmt) {}
@@ -100,11 +101,12 @@ void AstPrinter::visit(IfStmt* stmt) {
     representation.append(" ");
     stmt->elseBranch->accept(*this);
   }
-  representation.append(")");
+  representation.append(")\n");
 }
 
 void AstPrinter::visit(PrintStmt* stmt) {
   parenthesize("print", stmt->expression.get());
+  representation.append("\n");
 }
 
 void AstPrinter::visit(ReturnStmt* stmt) {}
@@ -115,13 +117,13 @@ void AstPrinter::visit(VarStmt* stmt) {
     representation.append(" = ");
     stmt->initializer->accept(*this);
   }
-  representation.append(")");
+  representation.append(")\n");
 }
 
 void AstPrinter::visit(WhileStmt* stmt) {
   representation.append("(while ");
   stmt->condition->accept(*this);
-  representation.append(" ");
+  representation.append("\n");
   stmt->body->accept(*this);
 }
 

@@ -4,12 +4,17 @@
 #include <string>
 #include <vector>
 
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "llox/ast-printer.h"
 #include "llox/ast.h"
 #include "llox/interpreter.h"
 #include "llox/parser.h"
 #include "llox/scanner.h"
 #include "llox/token.h"
+
+ABSL_FLAG(bool, print_ast, false,
+          "Print the Abstract Syntax Tree (AST) of the input file.");
 
 static void run(const std::string& source, llox::Interpreter& interpreter) {
   llox::Scanner scanner(source);
@@ -18,10 +23,14 @@ static void run(const std::string& source, llox::Interpreter& interpreter) {
   std::unique_ptr<llox::StmtList> statements = parser.parse();
 
   if (statements) {
-    llox::AstPrinter printer;
-    std::cout << printer.print(*statements) << "\n";
+    bool should_print_ast = absl::GetFlag(FLAGS_print_ast);
 
-    interpreter.interpret(*statements);
+    if (should_print_ast) {
+      llox::AstPrinter printer;
+      std::cout << printer.print(*statements) << "\n";
+    } else {
+      interpreter.interpret(*statements);
+    }
   }
 }
 
@@ -45,10 +54,14 @@ static void runPrompt() {
 }
 
 int main(int argc, char** argv) {
-  if (argc > 2) {
-    std::cerr << "usage: llox [script]" << std::endl;
-  } else if (argc == 2) {
-    runFile(argv[1]);
+  std::vector<char*> non_flag_args = absl::ParseCommandLine(argc, argv);
+
+  if (non_flag_args.size() > 2) {
+    std::cerr << "usage: " << non_flag_args[0]
+              << " --print-ast=<true|false> <input_file>\n";
+    return 1;
+  } else if (non_flag_args.size() == 2) {
+    runFile(non_flag_args[1]);
   } else {
     runPrompt();
   }
